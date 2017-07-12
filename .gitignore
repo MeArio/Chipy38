@@ -6,3 +6,5 @@ share/
 bin/
 /pyvenv.cfg
 /pip-selfcheck.json
+/Chipy38.sublime-project
+/Chipy38.sublime-workspace
