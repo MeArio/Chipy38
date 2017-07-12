@@ -3,5 +3,6 @@ include/
 lib/
 scripts/
 share/
+bin/
 /pyvenv.cfg
 /pip-selfcheck.json
