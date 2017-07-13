@@ -17,6 +17,6 @@ acpu = CPU(aram, adisplay)
 
 if __name__ == '__main__':
     print("sup")
-    aram.load_rom('breakout.ch8')
-    print(aram.memory)
+    acpu.load_rom('breakout.ch8')
+    print(acpu.memory)
     pyglet.app.run()
