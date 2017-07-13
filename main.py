@@ -1,18 +1,20 @@
 import pyglet
-
-window = pyglet.window.Window()
-
-label = pyglet.text.Label('Hello World',
-                          font_name='Times New Roman',
-                          font_size=36,
-                          x=window.width//2, y=window.height//2,
-                          anchor_x='center', anchor_y='center')
+from cpu import CPU
+from ram import RAM
+from display import Display
 
 
-@window.event
-def on_draw():
-    window.clear()
-    label.draw()
+# The Chip8 had 4KB of RAM so that means an array of 4096 bytes
+MEM_SIZE = 4096
+WIDTH = 64
+HEIGHT = 32
+SCALE = 10
 
+aram = RAM(MEM_SIZE)
+adisplay = Display(WIDTH, HEIGHT, SCALE)
+acpu = CPU(aram, adisplay)
+
+if __name__ == '__main__':
+    print("sup")
 
 pyglet.app.run()
