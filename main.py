@@ -1,4 +1,4 @@
-import pyglet
+import pygame
 from cpu import CPU
 from ram import RAM
 from display import Display
@@ -15,8 +15,18 @@ aram = RAM(MEM_SIZE, OFFSET)
 adisplay = Display(WIDTH, HEIGHT, SCALE)
 acpu = CPU(aram, adisplay)
 
+pygame.init()
+running = True
+
+adisplay.display_setup()
+
 if __name__ == '__main__':
     print("sup")
     acpu.load_rom('breakout.ch8')
     print(acpu.memory)
-    pyglet.app.run()
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        adisplay.update_display()
+        pygame.display.flip()
