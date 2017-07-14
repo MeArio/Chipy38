@@ -22,11 +22,14 @@ adisplay.display_setup()
 
 if __name__ == '__main__':
     print("sup")
-    acpu.load_rom('breakout.ch8')
-    print(acpu.memory)
+    acpu.initalize_cpu('breakout.ch8')
+    acpu.pc = 0x200
+    print(acpu.pc)
+    print(hex(acpu.memory[acpu.pc]))
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         adisplay.update_display()
         pygame.display.flip()
+    pygame.quit()
