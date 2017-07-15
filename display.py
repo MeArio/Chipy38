@@ -8,7 +8,10 @@ class Display():
     def __init__(self, width, height, scale):
         self.width = width
         self.height = height
-        self.display_buffer = [[0] * self.width for _ in range(self.height)]
+        self.display_buffer_init = [
+            [0] * self.width for _ in range(self.height)
+        ]
+        self.display_buffer = self.display_buffer_init
         self.scale = scale
 
     def display_setup(self):
