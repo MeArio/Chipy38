@@ -98,5 +98,16 @@ class CPU:
             PC on the top of the stack. The PC is then set to nnn.
         """
         self.stack_pointer += 1
-        self.stack[self.stack_pointer] = self.pc
+        self.stack.append(self.pc)
         self.pc = self.opcode & 0x0FFF
+
+    def branch_if_equal(self):
+        """
+            0x3xkk -  Skip next instruction if Vx = kk.
+            The interpreter compares register Vx to kk, and if they are equal,
+            increments the program counter by 2.
+        """
+        register = (self.opcode & 0x0F00) >> 8
+        value = self.opcode & 0xFF
+        if self.registers[register] == value:
+            self.pc += 2
