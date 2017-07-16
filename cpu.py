@@ -1,7 +1,11 @@
+import collections
+
+
 class CPU:
     def __init__(self, ram, display):
         self.registers = [0] * 16  # The CHIP8 has 16 registers
         self.memory = ram.memory
+        self.fontset = ram.fontset
         self.display = display
         self.offset = ram.offset
         self.I = 0  # Adress register
@@ -9,8 +13,8 @@ class CPU:
         self.delay_timer = 0  # 8-bit timer register
         self.sound_timer = 0  # When this isn't zero there should be a beep
         # The chip8 supports 16 levels of nested subroutines
-        self.stack = [0] * 16
-        self.stack_pointer = 0  # Points to the top-level stack instruction
+        self.stack = collections.deque(maxlen=16)
+        self.stack_pointer = -1  # Points to the top-level stack instruction
         self.opcode = 0
 
         # Opcode lookup table decyphered by looking at the first byte
@@ -21,25 +25,41 @@ class CPU:
             0x2: self.call_subroutine
         }
 
+    def load_fontset(self):
+        for i, (_, _) in enumerate(zip(self.memory, self.fontset)):
+            self.memory[i] = self.fontset[i]
+
     def load_rom(self, filename):
-        rom = open(filename, 'rb').read()
+        cart = open(filename, 'rb')
+        rom = cart.read()
         i = 0
         while i < len(rom):
             self.memory[i + self.offset] = rom[i]
             i += 1
-        rom.close()
+        cart.close()
 
     def fetch_opcode(self):
         self.opcode = self.memory[self.pc] << 8 | self.memory[self.pc + 1]
 
-    def decode_opcode():
-        pass
+    def decode_opcode(self):
+        operation = self.opcode & 0xF000
+        self.operation_lookup[operation]()
+
+    def update_timers(self):
+        if (self.delay_timer > 0):
+            self.delay_timer -= 1
+        if (self.sound_timer > 0):
+            self.delay_timer -= 1
+
+    def run_cycle(self):
+        self.fetch_opcode()
+        self.decode_opcode()
+        self.update_timers()
 
     def initalize_cpu(self, filename):
-        self.load_rom(filename)
+        self.load_fontset()
         self.pc = self.offset
-        self.fetch_opcode()
-        print(self.opcode)
+        self.load_rom(filename)
 
     # Here are the operations:
 

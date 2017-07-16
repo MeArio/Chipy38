@@ -23,9 +23,7 @@ adisplay.display_setup()
 if __name__ == '__main__':
     print("sup")
     acpu.initalize_cpu('breakout.ch8')
-    acpu.pc = 0x200
-    print(acpu.pc)
-    print(hex(acpu.memory[acpu.pc]))
+    print(acpu.memory)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
