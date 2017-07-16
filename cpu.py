@@ -1,4 +1,10 @@
-import collections
+from collections import deque
+
+
+class UnknownOpcodeException(Exception):
+    def __init__(self, opcode):
+        super(UnknownOpcodeException, self).__init__(
+            "The opcode isn't valid {}".format(self.opcode))
 
 
 class CPU:
@@ -13,7 +19,7 @@ class CPU:
         self.delay_timer = 0  # 8-bit timer register
         self.sound_timer = 0  # When this isn't zero there should be a beep
         # The chip8 supports 16 levels of nested subroutines
-        self.stack = collections.deque(maxlen=16)
+        self.stack = deque(maxlen=16)
         self.stack_pointer = -1  # Points to the top-level stack instruction
         self.opcode = 0
 
@@ -44,7 +50,10 @@ class CPU:
     def decode_opcode(self):
         # This makes sure I get only the first byte
         operation = (self.opcode & 0xF000) >> 12
-        self.operation_lookup[operation]()
+        try:
+            self.operation_lookup[operation]()
+        except KeyError:
+            raise UnknownOpcodeException(self.opcode)
 
     def update_timers(self):
         if (self.delay_timer > 0):

@@ -1,7 +1,7 @@
 import unittest
 import mock
 
-from cpu import CPU
+from cpu import CPU, UnknownOpcodeException
 import ram
 
 
@@ -42,6 +42,10 @@ class TestCPU(unittest.TestCase):
             self.cpu.decode_opcode()
             print(self.cpu.opcode)
             self.assertEqual(self.cpu.pc, (address & 0x0FFF))
+
+    def test_unknown_opcode(self):
+        self.opcode = 0x7FFF
+        self.assertRaises(UnknownOpcodeException)
 
 
 if __name__ == '__main__':
