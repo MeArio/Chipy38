@@ -40,6 +40,7 @@ class TestCPU(unittest.TestCase):
             self.cpu.pc = 0
             self.cpu.opcode = 0x1FFF & (address | 0xF000)  # here be bug
             self.cpu.decode_opcode()
+            print(self.cpu.opcode)
             self.assertEqual(self.cpu.pc, (address & 0x0FFF))
 
 

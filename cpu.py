@@ -42,7 +42,8 @@ class CPU:
         self.opcode = self.memory[self.pc] << 8 | self.memory[self.pc + 1]
 
     def decode_opcode(self):
-        operation = self.opcode & 0xF000
+        # This makes sure I get only the first byte
+        operation = (self.opcode & 0xF000) >> 12
         self.operation_lookup[operation]()
 
     def update_timers(self):
