@@ -63,8 +63,27 @@ class TestCPU(unittest.TestCase):
             self.cpu.stack.pop()
             self.cpu.stack_pointer -= 1
 
-    def test_branch_if_equal(self):
-        pass
+    def test_branch_if_equal_true(self):
+        """
+            0x3xkk -  Skip next instruction if Vx = kk.
+            Tests if the interpreter skips instructions for all values of VX
+        """
+        for value in range(0x00, 0xFF, 1):
+            self.cpu.pc = 0
+            self.cpu.registers[0xC] = value
+            self.cpu.opcode = value | 0x3C00
+            self.cpu.branch_if_equal_val()
+            self.assertEqual(self.cpu.pc, 2)
+
+    def test_branch_if_equal_false(self):
+        """
+            0x3xkk -  Skip next instruction if Vx = kk.
+            Tests if the interpreter doesn't skip an instruction iv Vx != kk
+        """
+        self.cpu.pc = 0
+        self.cpu.opcode = 0x3C20
+        self.cpu.branch_if_equal_val()
+        self.assertNotEqual(self.cpu.pc, 2)
 
 
 if __name__ == '__main__':
