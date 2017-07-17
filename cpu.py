@@ -1,4 +1,6 @@
 from collections import deque
+import logging
+logging.basicConfig(level=logging.INFO)
 
 
 class UnknownOpcodeException(Exception):
@@ -31,7 +33,8 @@ class CPU:
             0x2: self.call_subroutine,
             0x3: self.branch_if_equal_val,
             0x4: self.branch_if_not_equal_val,
-            0x5: self.branch_if_equal_reg
+            0x5: self.branch_if_equal_reg,
+            0x6: self.set_reg_to_val
         }
 
     def load_fontset(self):
@@ -84,16 +87,20 @@ class CPU:
         """
         if self.opcode == 0x00E0:
             self.display.clear_display()
+            logging.info("Cleared display")
         elif self.opcode == 0x00EE:
+            logging.info("Returned from subroutine at {}".format(hex(self.pc)))
             self.pc = self.stack[self.stack_pointer]
             self.stack.pop()
             self.stack_pointer -= 1
+            logging.info("to address at {}".format(hex(self.pc)))
 
     def jmp_to_addr(self):
         """ 0x1nnn:
               The interpreter sets the program counter to nnn.
         """
         self.pc = self.opcode & 0x0FFF
+        logging.info("Jumped to address at {}".format(hex(self.pc)))
 
     def call_subroutine(self):
         """0x2nnn:
@@ -103,6 +110,7 @@ class CPU:
         self.stack_pointer += 1
         self.stack.append(self.pc)
         self.pc = self.opcode & 0x0FFF
+        logging.info("Called subroutine at {}".format(hex(self.pc)))
 
     def branch_if_equal_val(self):
         """
@@ -114,6 +122,10 @@ class CPU:
         value = self.opcode & 0xFF
         if self.registers[register] == value:
             self.pc += 2
+            logging.info("Skipped {} because V{} and {} are equal".format(
+                hex(self.pc - 2),
+                register,
+                value))
 
     def branch_if_not_equal_val(self):
         """
@@ -125,6 +137,11 @@ class CPU:
         value = self.opcode & 0xFF
         if self.registers[register] != value:
             self.pc += 2
+            logging.info(
+                "Didn't skip {} because V{} and {} are not equal".format(
+                    hex(self.pc - 2),
+                    register,
+                    value))
 
     def branch_if_equal_reg(self):
         """
@@ -137,5 +154,19 @@ class CPU:
         register_y = (registers & 0xF0) >> 4
         if self.registers[register_x] == self.registers[register_y]:
             self.pc += 2
+            logging.info(
+              "Skipped {} because register V{} and V{} are equal to {}".format(
+                 hex(self.pc - 2),
+                 register_x,
+                 register_y,
+                 self.registers[register_x]))
 
     def set_reg_to_val(self):
+        """
+            6xkk - Set Vx = kk.
+            The interpreter puts the value kk into register Vx.
+        """
+        register = (self.opcode & 0x0F00) >> 8
+        value = self.opcode & 0x00FF
+        self.registers[register] = value
+        logging.info("Set register V{} to {}".format(register, value))

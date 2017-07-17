@@ -3,7 +3,6 @@ from cpu import CPU
 from ram import RAM
 from display import Display
 
-
 # The Chip8 had 4KB of RAM so that means an array of 4096 bytes
 MEM_SIZE = 4096
 WIDTH = 64
