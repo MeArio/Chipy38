@@ -28,7 +28,10 @@ class CPU:
         self.operation_lookup = {
             0x0: self.zero_opcodes,  # opcodes starting with zero
             0x1: self.jmp_to_addr,
-            0x2: self.call_subroutine
+            0x2: self.call_subroutine,
+            0x3: self.branch_if_equal_val,
+            0x4: self.branch_if_not_equal_val,
+            0x5: self.branch_if_equal_reg
         }
 
     def load_fontset(self):
@@ -122,3 +125,17 @@ class CPU:
         value = self.opcode & 0xFF
         if self.registers[register] != value:
             self.pc += 2
+
+    def branch_if_equal_reg(self):
+        """
+            5xy0 - Skip next instruction if Vx = Vy.
+            The interpreter compares register Vx to register Vy, and if they
+            are equal, increments the program counter by 2.
+        """
+        registers = (self.opcode & 0x0FF0) >> 4
+        register_x = registers & 0x0F
+        register_y = (registers & 0xF0) >> 4
+        if self.registers[register_x] == self.registers[register_y]:
+            self.pc += 2
+
+    def set_reg_to_val(self):

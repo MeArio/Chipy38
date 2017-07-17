@@ -63,7 +63,7 @@ class TestCPU(unittest.TestCase):
             self.cpu.stack.pop()
             self.cpu.stack_pointer -= 1
 
-    def test_branch_if_equal_true(self):
+    def test_branch_if_equal_true_val(self):
         """
             0x3xkk -  Skip next instruction if Vx = kk.
             Tests if the interpreter skips instructions for all values of VX
@@ -75,7 +75,7 @@ class TestCPU(unittest.TestCase):
             self.cpu.branch_if_equal_val()
             self.assertEqual(self.cpu.pc, 2)
 
-    def test_branch_if_equal_false(self):
+    def test_branch_if_equal_false_val(self):
         """
             0x3xkk -  Skip next instruction if Vx = kk.
             Tests if the interpreter doesn't skip an instruction iv Vx != kk
@@ -84,6 +84,22 @@ class TestCPU(unittest.TestCase):
         self.cpu.opcode = 0x3C20
         self.cpu.branch_if_equal_val()
         self.assertNotEqual(self.cpu.pc, 2)
+
+    def test_branch_if_equal_reg(self):
+        """
+            5xy0 - Skip next instruction if Vx = Vy.
+            Tests if it skips for every register combionation,
+            yes I know I'm testing too many values
+        """
+        for register_combination in range(0x00, 0xFF, 1):
+            self.cpu.pc = 0
+            register_x = register_combination & 0x0F
+            register_y = (register_combination & 0xF0) >> 4
+            self.cpu.opcode = ((register_combination | 0xF00) & 0x5FF) << 4
+            self.cpu.registers[register_x] = register_combination
+            self.cpu.registers[register_y] = register_combination
+            self.cpu.branch_if_equal_reg()
+            self.assertEqual(self.cpu.pc, 2)
 
 
 if __name__ == '__main__':
