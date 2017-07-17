@@ -8,7 +8,7 @@ Opcodes:
 4xkk - SNE Vx, byte *
 5xy0 - SE Vx, Vy *
 6xkk - LD Vx, byte *
-7xkk - ADD Vx, byte
+7xkk - ADD Vx, byte *
 8xy0 - LD Vx, Vy
 8xy1 - OR Vx, Vy
 8xy2 - AND Vx, Vy

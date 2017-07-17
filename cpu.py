@@ -36,7 +36,8 @@ class CPU:
             0x3: self.branch_if_equal_val,
             0x4: self.branch_if_not_equal_val,
             0x5: self.branch_if_equal_reg,
-            0x6: self.set_reg_to_val
+            0x6: self.set_reg_to_val,
+            0x7: self.add_to_reg
         }
 
     def load_fontset(self):
@@ -172,3 +173,13 @@ class CPU:
         value = self.opcode & 0x00FF
         self.registers[register] = value
         logger.info("Set register V{} to {}".format(register, value))
+
+    def add_to_reg(self):
+        """
+           7xkk - Set Vx = Vx + kk.
+           Adds the value kk to the value of register Vx, then stores the
+           result in Vx.
+        """
+        register = (self.opcode & 0xF00) >> 8
+        value = self.opcode & 0xFF
+        self.registers[register] += value
