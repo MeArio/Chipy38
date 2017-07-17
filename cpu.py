@@ -1,5 +1,7 @@
 from collections import deque
 import logging
+
+logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
@@ -87,20 +89,20 @@ class CPU:
         """
         if self.opcode == 0x00E0:
             self.display.clear_display()
-            logging.info("Cleared display")
+            logger.info("Cleared display")
         elif self.opcode == 0x00EE:
-            logging.info("Returned from subroutine at {}".format(hex(self.pc)))
+            logger.info("Returned from subroutine at {}".format(hex(self.pc)))
             self.pc = self.stack[self.stack_pointer]
             self.stack.pop()
             self.stack_pointer -= 1
-            logging.info("to address at {}".format(hex(self.pc)))
+            logger.info("to address at {}".format(hex(self.pc)))
 
     def jmp_to_addr(self):
         """ 0x1nnn:
               The interpreter sets the program counter to nnn.
         """
         self.pc = self.opcode & 0x0FFF
-        logging.info("Jumped to address at {}".format(hex(self.pc)))
+        logger.info("Jumped to address at {}".format(hex(self.pc)))
 
     def call_subroutine(self):
         """0x2nnn:
@@ -110,7 +112,7 @@ class CPU:
         self.stack_pointer += 1
         self.stack.append(self.pc)
         self.pc = self.opcode & 0x0FFF
-        logging.info("Called subroutine at {}".format(hex(self.pc)))
+        logger.info("Called subroutine at {}".format(hex(self.pc)))
 
     def branch_if_equal_val(self):
         """
@@ -122,7 +124,7 @@ class CPU:
         value = self.opcode & 0xFF
         if self.registers[register] == value:
             self.pc += 2
-            logging.info("Skipped {} because V{} and {} are equal".format(
+            logger.info("Skipped {} because V{} and {} are equal".format(
                 hex(self.pc - 2),
                 register,
                 value))
@@ -137,7 +139,7 @@ class CPU:
         value = self.opcode & 0xFF
         if self.registers[register] != value:
             self.pc += 2
-            logging.info(
+            logger.info(
                 "Didn't skip {} because V{} and {} are not equal".format(
                     hex(self.pc - 2),
                     register,
@@ -154,7 +156,7 @@ class CPU:
         register_y = (registers & 0xF0) >> 4
         if self.registers[register_x] == self.registers[register_y]:
             self.pc += 2
-            logging.info(
+            logger.info(
               "Skipped {} because register V{} and V{} are equal to {}".format(
                  hex(self.pc - 2),
                  register_x,
@@ -169,4 +171,4 @@ class CPU:
         register = (self.opcode & 0x0F00) >> 8
         value = self.opcode & 0x00FF
         self.registers[register] = value
-        logging.info("Set register V{} to {}".format(register, value))
+        logger.info("Set register V{} to {}".format(register, value))
