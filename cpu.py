@@ -101,7 +101,7 @@ class CPU:
         self.stack.append(self.pc)
         self.pc = self.opcode & 0x0FFF
 
-    def branch_if_equal(self):
+    def branch_if_equal_val(self):
         """
             0x3xkk -  Skip next instruction if Vx = kk.
             The interpreter compares register Vx to kk, and if they are equal,
@@ -110,4 +110,15 @@ class CPU:
         register = (self.opcode & 0x0F00) >> 8
         value = self.opcode & 0xFF
         if self.registers[register] == value:
+            self.pc += 2
+
+    def branch_if_not_equal_val(self):
+        """
+            0x4xkk - Skip next instruction if Vx != kk.
+            The interpreter compares register Vx to kk, and if they are not
+            equal, increments the program counter by 2.
+        """
+        register = (self.opcode & 0x0F00) >> 8
+        value = self.opcode & 0xFF
+        if self.registers[register] != value:
             self.pc += 2
