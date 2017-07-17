@@ -37,12 +37,18 @@ class CPU:
             0x4: self.branch_if_not_equal_val,
             0x5: self.branch_if_equal_reg,
             0x6: self.set_reg_to_val,
-            0x7: self.add_to_reg
+            0x7: self.add_to_reg,
+            0x8: self.logical_operations
+        }
+
+        # basically opcodes starting with 8 the last byte is the operation
+        self.logical_operation_lookup = {
+            0x0: self.set_reg_to_reg
         }
 
     def load_fontset(self):
         for i, (_, _) in enumerate(zip(self.memory, self.fontset)):
-            self.memory[i] = self.fontset[i]
+                self.memory[i] = self.fontset[i]
 
     def load_rom(self, filename):
         cart = open(filename, 'rb')
@@ -97,6 +103,13 @@ class CPU:
             self.stack.pop()
             self.stack_pointer -= 1
             logger.info("to address at {}".format(hex(self.pc)))
+
+    def logical_operations(self):
+        operation = self.opcode & 0xF
+        try:
+            self.logical_operation_lookup[operation]()
+        except KeyError:
+            raise UnknownOpcodeException
 
     def jmp_to_addr(self):
         """ 0x1nnn:
@@ -183,3 +196,13 @@ class CPU:
         register = (self.opcode & 0xF00) >> 8
         value = self.opcode & 0xFF
         self.registers[register] += value
+
+    def set_reg_to_reg(self):
+        """
+            8xy0 - Set Vx = Vy.
+            Stores the value of register Vy in register Vx.
+        """
+        registers = (self.opcode & 0x0FF0) >> 4
+        register_x = registers & 0x0F
+        register_y = (registers & 0xF0) >> 4
+        self.registers[register_x] = self.registers[register_y]
