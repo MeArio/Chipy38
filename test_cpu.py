@@ -101,6 +101,17 @@ class TestCPU(unittest.TestCase):
             self.cpu.branch_if_equal_reg()
             self.assertEqual(self.cpu.pc, 2)
 
+    def test_set_register_to_value(self):
+        """
+            6xkk - Set Vx = kk.
+            Tests all the possible values Vx can be set to
+        """
+        for register in self.cpu.registers:
+            for value in range(0, 0xFF, 1):
+                self.cpu.opcode = ((0x60 | register) << 8) | value
+                self.cpu.set_reg_to_val()
+                self.assertEqual(self.cpu.registers[register], value)
+
 
 if __name__ == '__main__':
     unittest.main()
