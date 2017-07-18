@@ -227,3 +227,6 @@ class CPU:
             values, and if either bit is 1, then the same bit in the result is
             also 1. Otherwise, it is 0.
         """
+        register = self.return_middle_registers(self.opcode)
+        self.registers[register[0]] = (
+            self.registers[register[0]] | self.registers[register[1]])
