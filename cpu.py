@@ -43,7 +43,8 @@ class CPU:
 
         # basically opcodes starting with 8 the last byte is the operation
         self.logical_operation_lookup = {
-            0x0: self.set_reg_to_reg
+            0x0: self.set_reg_to_reg,
+            0x1: self.bitwise_or
         }
 
     def load_fontset(self):
@@ -85,6 +86,18 @@ class CPU:
         self.load_fontset()
         self.pc = self.offset
         self.load_rom(filename)
+
+    def return_middle_registers(self, opcode):
+        """
+            Return a tuple consisting of the registers in between an opcode
+
+            >>> return_middle_registers(8231)
+            (2, 3)
+        """
+        registers = (opcode & 0x0FF0) >> 4
+        register_x = registers & 0x0F
+        register_y = (registers & 0xF0) >> 4
+        return (register_x, register_y)
 
     # Here are the operations:
 
@@ -165,17 +178,16 @@ class CPU:
             The interpreter compares register Vx to register Vy, and if they
             are equal, increments the program counter by 2.
         """
-        registers = (self.opcode & 0x0FF0) >> 4
-        register_x = registers & 0x0F
-        register_y = (registers & 0xF0) >> 4
-        if self.registers[register_x] == self.registers[register_y]:
+        registers = self.return_middle_registers(self.opcode)
+
+        if self.registers[registers[0]] == self.registers[registers[1]]:
             self.pc += 2
             logger.info(
               "Skipped {} because register V{} and V{} are equal to {}".format(
                  hex(self.pc - 2),
-                 register_x,
-                 register_y,
-                 self.registers[register_x]))
+                 registers[0],
+                 registers[1],
+                 self.registers[registers[0]]))
 
     def set_reg_to_val(self):
         """
@@ -203,8 +215,15 @@ class CPU:
             8xy0 - Set Vx = Vy.
             Stores the value of register Vy in register Vx.
         """
-        registers = (self.opcode & 0x0FF0) >> 4
-        register_x = registers & 0x0F
-        register_y = (registers & 0xF0) >> 4
-        self.registers[register_x] = self.registers[register_y]
-        logger.info("Set register V{} to V{}".format(register_x, register_y))
+        register = self.return_middle_registers(self.opcode)
+        self.registers[register[0]] = self.registers[register[1]]
+        logger.info("Set register V{} to V{}".format(register[0], register[1]))
+
+    def bitwise_or(self):
+        """
+            8xy1 - Set Vx = Vx OR Vy.
+            Performs a bitwise OR on the values of Vx and Vy, then stores the
+            result in Vx. A bitwise OR compares the corrseponding bits from two
+            values, and if either bit is 1, then the same bit in the result is
+            also 1. Otherwise, it is 0.
+        """

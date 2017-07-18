@@ -130,8 +130,10 @@ class TestCPU(unittest.TestCase):
             self.cpu.registers[register_y] = 0
 
         def test_logical_operations_decoding(self):
-            # to do
-            pass
+            self.cpu.opcode = 0x8231
+            self.cpu.registers[2] = 4
+            self.cpu.decode_opcode()
+            self.assertEqual(self.cpu.registers[3], 4)
 
 
 if __name__ == '__main__':
