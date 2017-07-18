@@ -95,8 +95,8 @@ class CPU:
             (2, 3)
         """
         registers = (opcode & 0x0FF0) >> 4
-        register_x = registers & 0x0F
-        register_y = (registers & 0xF0) >> 4
+        register_x = (registers & 0xF0) >> 4
+        register_y = registers & 0x0F
         return (register_x, register_y)
 
     # Here are the operations:
