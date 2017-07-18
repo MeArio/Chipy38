@@ -44,7 +44,9 @@ class CPU:
         # basically opcodes starting with 8 the last byte is the operation
         self.logical_operation_lookup = {
             0x0: self.set_reg_to_reg,
-            0x1: self.bitwise_or
+            0x1: self.bitwise_or,
+            0x2: self.bitwise_and,
+            0x3: self.bitwise_xor
         }
 
     def load_fontset(self):
@@ -230,3 +232,55 @@ class CPU:
         register = self.return_middle_registers(self.opcode)
         self.registers[register[0]] = (
             self.registers[register[0]] | self.registers[register[1]])
+        logger.info("Bitwise OR on V{} and V{} for {}".format(
+            register[0],
+            register[1]),
+            self.registers[register[0]])
+
+    def bitwise_and(self):
+        """
+            8xy2 - Set Vx = Vx AND Vy.
+            Performs a bitwise AND on the values of Vx and Vy, then stores the
+            result in Vx. A bitwise AND compares the corrseponding bits from
+            two values, and if both bits are 1, then the same bit in the result
+            is also 1. Otherwise, it is 0.
+        """
+        register = self.return_middle_registers(self.opcode)
+        self.registers[register[0]] = (
+            self.registers[register[0]] & self.registers[register[1]])
+        logger.info("Bitwise AND on V{} and V{} for {}".format(
+            register[0],
+            register[1]),
+            self.registers[register[0]])
+
+    def bitwise_xor(self):
+        """
+            8xy3 - Set Vx = Vx XOR Vy.
+            Performs a bitwise exclusive OR on the values of Vx and Vy, then
+            stores the result in Vx. An exclusive OR compares the corrseponding
+            bits from two values, and if the bits are not both the same, then
+            the corresponding bit in the result is set to 1. Otherwise, it is 0
+        """
+        register = self.return_middle_registers(self.opcode)
+        self.registers[register[0]] = (
+            self.registers[register[0]] ^ self.registers[register[1]])
+        logger.info("Bitwise AND on V{} and V{} for {}".format(
+            register[0],
+            register[1]),
+            self.registers[register[0]])
+
+    def add_reg_to_reg(self):
+        """
+            8xy4 - Set Vx = Vx + Vy, set VF = carry.
+            The values of Vx and Vy are added together. If the result is
+            greater than 8 bits (i.e., > 255,) VF is set to 1, otherwise 0.
+            Only the lowest 8 bits of the result are kept, and stored in Vx.
+        """
+        register = self.return_middle_registers(self.opcode)
+        sum = self.registers[register[0]] + self.registers[register[1]]
+        if sum > 0xFF:
+            self.registers[0xF] = 1
+            self.registers[register[0]] = sum & 0xFF
+        else:
+            self.registers[0xF] = 0
+            self.registers[register[0]] = sum

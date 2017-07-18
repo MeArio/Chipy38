@@ -135,6 +135,22 @@ class TestCPU(unittest.TestCase):
             self.cpu.decode_opcode()
             self.assertEqual(self.cpu.registers[3], 4)
 
+        def test_add_flag(self):
+            """
+                8xy4 - Set Vx = Vx + Vy, set VF = carry.
+                Tests if the operations sets the carry flag to 1 correctly and
+                that the sum is right.
+            """
+            for sum in range(0xFF, 0xFFF, 0x10):
+                rightsum = (0x1 + sum) & 0xFF
+                self.cpu.opcode = 0x8124
+                self.cpu.registers[1] = 0x1
+                self.cpu.registers[2] = sum
+                self.cpu.registers[0xf] = 0
+                self.cpu.add_reg_to_reg()
+                self.assertEqual(self.cpu.registers[0xf], 1)
+                self.assertEqual(self.cpu.registers[1], rightsum)
+
 
 if __name__ == '__main__':
     unittest.main()
