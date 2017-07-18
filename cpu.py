@@ -196,6 +196,7 @@ class CPU:
         register = (self.opcode & 0xF00) >> 8
         value = self.opcode & 0xFF
         self.registers[register] += value
+        logger.info("Added {} to register V{}".format(value, register))
 
     def set_reg_to_reg(self):
         """
@@ -206,3 +207,4 @@ class CPU:
         register_x = registers & 0x0F
         register_y = (registers & 0xF0) >> 4
         self.registers[register_x] = self.registers[register_y]
+        logger.info("Set register V{} to V{}".format(register_x, register_y))

@@ -112,6 +112,27 @@ class TestCPU(unittest.TestCase):
                 self.cpu.set_reg_to_val()
                 self.assertEqual(self.cpu.registers[register], value)
 
+    def test_set_register_register(self):
+        """
+            8xy0 - Set Vx = Vy.
+            Tests all the possible register combinations.
+        """
+        for register_combination in range(0, 0xFF, 0x1):
+            register_x = register_combination & 0x0F
+            register_y = (register_combination & 0xF0) >> 4
+            self.cpu.opcode = ((register_combination | 0xF00) & 0x8FF) << 4
+            self.cpu.registers[register_y] = register_combination
+            self.cpu.set_reg_to_reg()
+            self.assertEqual(
+                self.cpu.registers[register_x],
+                self.cpu.registers[register_y])
+            self.cpu.registers[register_x] = 0
+            self.cpu.registers[register_y] = 0
+
+        def test_logical_operations_decoding(self):
+            # to do
+            pass
+
 
 if __name__ == '__main__':
     unittest.main()
