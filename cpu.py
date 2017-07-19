@@ -2,13 +2,16 @@ from collections import deque
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+fh = logging.FileHandler('log.log')
+fh.setLevel(logging.INFO)
+logger.addHandler(fh)
 
 
 class UnknownOpcodeException(Exception):
     def __init__(self, opcode):
         super(UnknownOpcodeException, self).__init__(
-            "The opcode isn't valid {}".format(self.opcode))
+            "The opcode isn't valid {}".format(hex(opcode)))
 
 
 class CPU:
@@ -39,7 +42,9 @@ class CPU:
             0x5: self.branch_if_equal_reg,
             0x6: self.set_reg_to_val,
             0x7: self.add_to_reg,
-            0x8: self.logical_operations
+            0x8: self.logical_operations,
+            0xD: self.draw_pixel_to_display,
+            0xA: self.set_I_to_address
         }
 
         # basically opcodes starting with 8 the last byte is the operation
@@ -86,6 +91,7 @@ class CPU:
         self.fetch_opcode()
         self.decode_opcode()
         self.update_timers()
+        self.pc += 2
 
     def initalize_cpu(self, filename):
         self.load_fontset()
@@ -321,7 +327,7 @@ class CPU:
         """
         register = self.return_middle_registers(self.opcode)
         x = self.registers[register[0]]
-        y = self.register[register[1]]
+        y = self.registers[register[1]]
         height = self.opcode & 0xF
 
         self.registers[0xF] = 0
@@ -339,3 +345,10 @@ class CPU:
                         self.registers[0xF] = 1
 
         self.draw_flag = True
+
+    def set_I_to_address(self):
+        """
+            Annn - Set I = nnn.
+            The value of register I is set to nnn.
+        """
+        self.I = self.opcode & 0xFFF

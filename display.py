@@ -32,14 +32,14 @@ class Display():
                         Display.colors['white'])
         self.screen.blit(self.surface, (0, 0))
 
-        def set_pixel(self, x, y):
-            """
-                Sets a pixel inside the buffer to on if it is 0 and returns
-                False. Otherwise sets the pixel to off and returns True.
-            """
-            if self.display_buffer[x, y] == 0:
-                self.display_buffer[x, y] = 1
-                return False
-            else:
-                self.display_buffer[x, y] = 0
-                return True
+    def set_pixel(self, x, y):
+        """
+            Sets a pixel inside the buffer to on if it is 0 and returns
+            False. Otherwise sets the pixel to off and returns True.
+        """
+        if self.display_buffer[y][x] == 0:
+            self.display_buffer[y][x] = 1
+            return False
+        else:
+            self.display_buffer[y][x] = 0
+            return True
