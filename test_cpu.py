@@ -151,6 +151,10 @@ class TestCPU(unittest.TestCase):
                 self.assertEqual(self.cpu.registers[0xf], 1)
                 self.assertEqual(self.cpu.registers[1], rightsum)
 
+        def test_sub_flag(self):
+            # to do
+            pass
+
 
 if __name__ == '__main__':
     unittest.main()

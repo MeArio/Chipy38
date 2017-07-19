@@ -46,7 +46,9 @@ class CPU:
             0x0: self.set_reg_to_reg,
             0x1: self.bitwise_or,
             0x2: self.bitwise_and,
-            0x3: self.bitwise_xor
+            0x3: self.bitwise_xor,
+            0x4: self.add_reg_to_reg,
+            0x5: self.sub_reg_from_reg
         }
 
     def load_fontset(self):
@@ -284,3 +286,21 @@ class CPU:
         else:
             self.registers[0xF] = 0
             self.registers[register[0]] = sum
+
+    def sub_reg_from_reg(self):
+        """
+            8xy5 - Set Vx = Vx - Vy, set VF = NOT borrow.
+            If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted
+            from Vx, and the results stored in Vx.
+        """
+        register = self.return_middle_registers(self.opcode)
+        if self.registers[register[0]] > self.registers[register[1]]:
+            self.registers[0xF] = 1
+            self.registers[register[0]] -= self.registers[register[1]]
+        else:
+            self.registers[0xF] = 0
+            self.registers[register[0]] = (
+                256
+                + self.registers[register[0]]
+                - self.registers[register[1]])
+        # the 256 is there to simulate a wrap around of an unsigned integer
