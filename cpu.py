@@ -54,7 +54,8 @@ class CPU:
             0x2: self.bitwise_and,
             0x3: self.bitwise_xor,
             0x4: self.add_reg_to_reg,
-            0x5: self.sub_reg_from_reg
+            0x5: self.sub_reg_from_reg,
+            0x6: self.right_shift
         }
 
     def load_fontset(self):
@@ -114,9 +115,9 @@ class CPU:
 
     def zero_opcodes(self):
         """ Opeartions that start with 0 are either
-            0x0nnn - Jump to machine routine at  nnn (ignored)
-            0x00E0 - Clear the display
-            0x00EE - Return from a subroutine.
+            0nnn - Jump to machine routine at  nnn (ignored)
+            00E0 - Clear the display
+            00EE - Return from a subroutine.
         """
         if self.opcode == 0x00E0:
             self.display.clear_display()
@@ -136,8 +137,9 @@ class CPU:
             raise UnknownOpcodeException
 
     def jmp_to_addr(self):
-        """ 0x1nnn:
-              The interpreter sets the program counter to nnn.
+        """
+            1nnn - Jump to location nnn.
+            The interpreter sets the program counter to nnn.
         """
         self.pc = self.opcode & 0x0FFF
         logger.info("Jumped to address at {}".format(hex(self.pc)))
@@ -154,7 +156,7 @@ class CPU:
 
     def branch_if_equal_val(self):
         """
-            0x3xkk -  Skip next instruction if Vx = kk.
+            3xkk -  Skip next instruction if Vx = kk.
             The interpreter compares register Vx to kk, and if they are equal,
             increments the program counter by 2.
         """
@@ -169,7 +171,7 @@ class CPU:
 
     def branch_if_not_equal_val(self):
         """
-            0x4xkk - Skip next instruction if Vx != kk.
+            4xkk - Skip next instruction if Vx != kk.
             The interpreter compares register Vx to kk, and if they are not
             equal, increments the program counter by 2.
         """
@@ -367,3 +369,18 @@ class CPU:
         """
         self.I = self.opcode & 0xFFF
         logger.info("Set I to {}".format(hex(self.I)))
+
+    def right_shift(self):
+        """
+            8x06 - Set Vx = Vx SHR 1.
+            If the least-significant bit of Vx is 1, then VF is set to 1,
+            otherwise 0. Then Vx is divided by 2.
+        """
+        register = (self.opcode & 0xFFF) >> 8
+        bits = self.registers[register]
+        if bits & 0b1 == 1:
+            self.registers[0xF] = 1
+        else:
+            self.registers[0xF] = 0
+
+        self.registers[register] = self.registers[register] >> 1
