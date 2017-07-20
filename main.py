@@ -3,6 +3,12 @@ from cpu import CPU
 from ram import RAM
 from display import Display
 import argparse
+import logging
+
+logger = logging.getLogger(__name__)
+fh = logging.FileHandler('last.log')
+fh.setLevel(logging.INFO)
+logger.addHandler(fh)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("rom", help="path to rom", type=str)
@@ -16,17 +22,18 @@ SCALE = 10
 OFFSET = 0x200
 TIMER = pygame.USEREVENT + 1
 
+display = Display(WIDTH, HEIGHT, SCALE)
+display.display_setup()
+ram = RAM(MEM_SIZE, OFFSET)
+cpu = CPU(ram, display)
+cpu.initalize_cpu(args.rom)
+pygame.time.set_timer(TIMER, 17)
+
 
 def main_loop(args):
     """
         Runs the main loop.
     """
-    display = Display(WIDTH, HEIGHT, SCALE)
-    display.display_setup()
-    ram = RAM(MEM_SIZE, OFFSET)
-    cpu = CPU(ram, display)
-    cpu.initalize_cpu(args.rom)
-    pygame.time.set_timer(TIMER, 17)
     running = True
 
     while running:
@@ -48,5 +55,13 @@ def main_loop(args):
 
 
 if __name__ == '__main__':
-    main_loop(args)
+    try:
+        main_loop(args)
+    except Exception:
+        logger.info(
+            " Current Addr: {}\n Curr Opcode: {}\n Nxt Opcode: {}".format(
+                hex(cpu.pc),
+                hex(cpu.memory[cpu.pc] << 8 | cpu.memory[cpu.pc + 1]),
+                hex(cpu.memory[cpu.pc+1] << 8 | cpu.memory[cpu.pc + 2])))
+
     pygame.quit()
