@@ -4,7 +4,7 @@ import bit_utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
-fh = logging.FileHandler('log.log')
+fh = logging.FileHandler('last.log', mode='w')
 fh.setLevel(logging.INFO)
 logger.addHandler(fh)
 
