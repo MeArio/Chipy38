@@ -13,6 +13,7 @@ class UnknownOpcodeException(Exception):
     def __init__(self, opcode):
         super(UnknownOpcodeException, self).__init__(
             "The opcode isn't valid {}".format(hex(opcode)))
+        logger.error("The opcode isn't valid {}".format(hex(opcode)))
 
 
 class CPU:
@@ -55,7 +56,8 @@ class CPU:
             0x3: self.bitwise_xor,
             0x4: self.add_reg_to_reg,
             0x5: self.sub_reg_from_reg,
-            0x6: self.right_shift
+            0x6: self.right_shift,
+            0x7: self.subn_reg_from_reg
         }
 
     def load_fontset(self):
@@ -384,3 +386,30 @@ class CPU:
             self.registers[0xF] = 0
 
         self.registers[register] = self.registers[register] >> 1
+        logger.info("Shifted register V{} 1 bit to the right got {}".format(
+            register,
+            self.registers[register]))
+
+    def subn_reg_from_reg(self):
+        """
+            8xy7 - Set Vx = Vy - Vx, set VF = NOT borrow.
+            If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted
+            from Vy, and the results stored in Vx.
+        """
+        register = self.return_middle_registers(self.opcode)
+        if self.registers[register[1]] > self.registers[register[0]]:
+            self.registers[0xF] = 1
+            self.registers[register[0]] = (
+                self.registers[register[1]]
+                - self.registers[register[0]])
+        else:
+            self.registers[0xF] = 0
+            self.registers[register[0]] = (
+                256
+                + self.registers[register[1]]
+                - self.registers[register[0]])
+
+        logger.info("Subtracted V{} from V{} and got {}".format(
+            register[1],
+            register[0],
+            self.registers[register[0]]))
