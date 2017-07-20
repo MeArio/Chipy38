@@ -218,7 +218,10 @@ class CPU:
         """
         register = (self.opcode & 0xF00) >> 8
         value = self.opcode & 0xFF
-        self.registers[register] += value
+        sum = self.registers[register] + value
+        if sum > 0xFF:
+            sum = bit_utils.wrap_around(sum, 0xFF)
+        self.registers[register] = sum
         logger.info("Added {} to register V{}".format(value, register))
 
     def set_reg_to_reg(self):

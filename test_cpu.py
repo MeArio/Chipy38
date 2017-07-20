@@ -1,5 +1,6 @@
 import unittest
 import mock
+import bit_utils
 
 from cpu import CPU, UnknownOpcodeException
 import ram
@@ -151,9 +152,10 @@ class TestCPU(unittest.TestCase):
                 self.assertEqual(self.cpu.registers[0xf], 1)
                 self.assertEqual(self.cpu.registers[1], rightsum)
 
-        def test_sub_flag(self):
-            # to do
-            pass
+        def test_bitutils_wrap_around(self):
+            for number in range(0, 64 * 4):
+                x = bit_utils.wrap_around(number, 64)
+                self.assertTrue(x < 64)
 
 
 if __name__ == '__main__':
