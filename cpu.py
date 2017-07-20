@@ -57,7 +57,8 @@ class CPU:
             0x4: self.add_reg_to_reg,
             0x5: self.sub_reg_from_reg,
             0x6: self.right_shift,
-            0x7: self.subn_reg_from_reg
+            0x7: self.subn_reg_from_reg,
+            0x8: self.left_shift
         }
 
     def load_fontset(self):
@@ -388,7 +389,7 @@ class CPU:
         self.registers[register] = self.registers[register] >> 1
         logger.info("Shifted register V{} 1 bit to the right got {}".format(
             register,
-            self.registers[register]))
+            hex(self.registers[register])))
 
     def subn_reg_from_reg(self):
         """
@@ -413,3 +414,21 @@ class CPU:
             register[1],
             register[0],
             self.registers[register[0]]))
+
+    def left_shift(self):
+        """
+            8x0E - Set Vx = Vx SHL 1.
+            If the most-significant bit of Vx is 1, then VF is set to 1,
+            otherwise to 0. Then Vx is multiplied by 2.
+        """
+        register = (self.opcode & 0xFFF) >> 8
+        bits = self.registers[register]
+        if bits & 0b1 == 1:
+            self.registers[0xF] = 1
+        else:
+            self.registers[0xF] = 0
+
+        self.registers[register] = self.registers[register] << 1
+        logger.info("Shifted register V{} 1 bit to the left got {}".format(
+            register,
+            hex(self.registers[register])))

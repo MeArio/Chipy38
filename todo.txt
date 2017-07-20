@@ -17,7 +17,7 @@ Opcodes:
 8xy5 - SUB Vx, Vy *
 8xy6 - SHR Vx {, Vy} *
 8xy7 - SUBN Vx, Vy *
-8xyE - SHL Vx {, Vy}
+8xyE - SHL Vx {, Vy} *
 9xy0 - SNE Vx, Vy
 Annn - LD I, addr *
 Bnnn - JP V0, addr
