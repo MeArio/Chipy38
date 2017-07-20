@@ -220,7 +220,7 @@ class CPU:
         value = self.opcode & 0xFF
         sum = self.registers[register] + value
         if sum > 0xFF:
-            sum = bit_utils.wrap_around(sum, 0xFF)
+            sum = bit_utils.wrap_around(sum, 0xFF + 1)
         self.registers[register] = sum
         logger.info("Added {} to register V{}".format(value, register))
 
