@@ -12,6 +12,20 @@ logger.addHandler(fh)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("rom", help="path to rom", type=str)
+parser.add_argument(
+    "-s",
+    help="sets the window scale",
+    dest="scale",
+    type=int,
+    default=10)
+
+parser.add_argument(
+    "-t",
+    help="sets the delay between cpu cycles in ms",
+    dest="timer",
+    type=int,
+    default=1)
+
 args = parser.parse_args()
 
 # The Chip8 had 4KB of RAM so that means an array of 4096 bytes
@@ -22,22 +36,26 @@ SCALE = 10
 OFFSET = 0x200
 TIMER = pygame.USEREVENT + 1
 
+# Initializing all the emulator objects
 display = Display(WIDTH, HEIGHT, SCALE)
-display.display_setup()
 ram = RAM(MEM_SIZE, OFFSET)
 cpu = CPU(ram, display)
-cpu.initalize_cpu(args.rom)
-pygame.time.set_timer(TIMER, 17)
 
 
 def main_loop(args):
     """
         Runs the main loop.
     """
+    timer = args.timer
+    display.scale = args.scale
+    display.display_setup()
+
+    cpu.initalize_cpu(args.rom)
+    pygame.time.set_timer(TIMER, 17)
     running = True
 
     while running:
-        pygame.time.wait(1)
+        pygame.time.wait(timer)
         cpu.run_cycle()
 
         for event in pygame.event.get():
