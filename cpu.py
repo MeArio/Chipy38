@@ -1,5 +1,6 @@
 from collections import deque
 import logging
+import bit_utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -332,16 +333,17 @@ class CPU:
 
         self.registers[0xF] = 0
 
-        if x > self.display.width:
-            x -= self.display.width
-        if y > self.display.height:
-            y -= self.display.height
+        bit_utils.wrap_around(x, self.display.width)
+        bit_utils.wrap_around(y, self.display.height)
 
         for yline in range(0, height):
             pixels = self.memory[self.I + yline]
             for xline in range(0, 8):
                 if pixels & (0x80 >> xline) != 0:
-                    if self.display.set_pixel(x + xline, y+yline):
+                    print(x + xline, y + yline)
+                    x1 = bit_utils.wrap_around(x + xline, self.display.width)
+                    y1 = bit_utils.wrap_around(y + yline, self.display.height)
+                    if self.display.set_pixel(x1, y1):
                         self.registers[0xF] = 1
 
         self.draw_flag = True

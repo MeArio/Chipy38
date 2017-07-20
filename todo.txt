@@ -19,10 +19,10 @@ Opcodes:
 8xy7 - SUBN Vx, Vy
 8xyE - SHL Vx {, Vy}
 9xy0 - SNE Vx, Vy
-Annn - LD I, addr
+Annn - LD I, addr *
 Bnnn - JP V0, addr
 Cxkk - RND Vx, byte
-Dxyn - DRW Vx, Vy, nibble
+Dxyn - DRW Vx, Vy, nibble *
 Ex9E - SKP Vx
 ExA1 - SKNP Vx
 Fx07 - LD Vx, DT
