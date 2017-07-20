@@ -30,7 +30,6 @@ class CPU:
         self.stack = deque(maxlen=16)
         self.stack_pointer = -1  # Points to the top-level stack instruction
         self.opcode = 0
-        self.draw_flag = False
 
         # Opcode lookup table decyphered by looking at the first byte
 
@@ -294,6 +293,10 @@ class CPU:
         else:
             self.registers[0xF] = 0
             self.registers[register[0]] = sum
+        logger.info("Added V{} to V{} and got {}".format(
+            register[0],
+            register[1],
+            self.registers[register[0]]))
 
     def sub_reg_from_reg(self):
         """
@@ -312,6 +315,10 @@ class CPU:
                 + self.registers[register[0]]
                 - self.registers[register[1]])
         # the 256 is there to simulate a wrap around of an unsigned integer
+        logger.info("Subtracted V{} from V{} and got {}".format(
+            register[1],
+            register[0],
+            self.registers[register[0]]))
 
     def draw_pixel_to_display(self):
         """
@@ -333,20 +340,22 @@ class CPU:
 
         self.registers[0xF] = 0
 
-        bit_utils.wrap_around(x, self.display.width)
-        bit_utils.wrap_around(y, self.display.height)
+        x = bit_utils.wrap_around(x, self.display.width)
+        y = bit_utils.wrap_around(y, self.display.height)
 
         for yline in range(0, height):
             pixels = self.memory[self.I + yline]
+            y1 = bit_utils.wrap_around(y + yline, self.display.height)
             for xline in range(0, 8):
+                x1 = bit_utils.wrap_around(x + xline, self.display.width)
                 if pixels & (0x80 >> xline) != 0:
-                    print(x + xline, y + yline)
-                    x1 = bit_utils.wrap_around(x + xline, self.display.width)
-                    y1 = bit_utils.wrap_around(y + yline, self.display.height)
                     if self.display.set_pixel(x1, y1):
                         self.registers[0xF] = 1
 
-        self.draw_flag = True
+        self.display.draw_flag = True
+        logger.info("Drawing sprite from {} to {}".format(
+            hex(self.I),
+            hex(self.I + height)))
 
     def set_I_to_address(self):
         """
@@ -354,3 +363,4 @@ class CPU:
             The value of register I is set to nnn.
         """
         self.I = self.opcode & 0xFFF
+        logger.info("Set I to {}".format(hex(self.I)))

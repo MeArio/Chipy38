@@ -39,6 +39,10 @@ def main_loop(args):
             if event.type == pygame.QUIT:
                 running = False
 
+        if display.draw_flag:
+            display.update_display()
+            pygame.display.flip()
+
         if cpu.opcode == 0x00FD:
             running = False
 
