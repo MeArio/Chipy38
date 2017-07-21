@@ -98,13 +98,13 @@ class CPU:
     def update_timers(self):
         if (self.delay_timer > 0):
             self.delay_timer -= 1
+            logger.info("Decremented timer {}".format(self.delay_timer))
         if (self.sound_timer > 0):
             self.sound_timer -= 1
 
     def run_cycle(self):
         self.fetch_opcode()
         self.decode_opcode()
-        self.update_timers()
         self.pc += 2
 
     def initalize_cpu(self, filename):
@@ -163,12 +163,15 @@ class CPU:
         """
         self.pc = self.opcode & 0x0FFF
         logger.info("Jumped to address at {}".format(hex(self.pc)))
+        # PC gets incremented after every instruction this counteracts that
+        self.pc -= 2
 
     def call_subroutine(self):
         """0x2nnn:
             The interpreter increments the stack pointer, then puts the current
             PC on the top of the stack. The PC is then set to nnn.
         """
+        # Might be an issue didn't test it yet.
         self.stack_pointer += 1
         self.stack.append(self.pc)
         self.pc = self.opcode & 0x0FFF
@@ -490,7 +493,7 @@ class CPU:
         register = (self.opcode & 0xFFF) >> 8
         self.I = self.registers[register] * 5
 
-        logging.info("Loaded sprite at memory location {}".format(hex(self.I)))
+        logger.info("Loaded sprite at memory location {}".format(hex(self.I)))
 
     def set_delay_timer_to_reg(self):
         """
@@ -500,7 +503,7 @@ class CPU:
         register = (self.opcode & 0xFFF) >> 8
         self.delay_timer = self.registers[register]
 
-        logging.info("Set delay timer to register V{} = {}".format(
+        logger.info("Set delay timer to register V{} = {}".format(
             register,
             self.registers[register]))
 
@@ -511,6 +514,6 @@ class CPU:
         """
         register = (self.opcode & 0xFFF) >> 8
         self.registers[register] = self.delay_timer
-        logging.info("Set register V{} to delay timer {}".format(
+        logger.info("Set register V{} to delay timer {}".format(
             register,
             self.registers[register]))
