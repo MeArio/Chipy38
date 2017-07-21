@@ -4,11 +4,11 @@ lib/
 scripts/
 share/
 bin/
+roms/
 /pyvenv.cfg
 /pip-selfcheck.json
 /Chipy38.sublime-project
 /Chipy38.sublime-workspace
-/breakout.ch8
 /.cache
 /last.log
-/maze.ch8
+*.pyc
