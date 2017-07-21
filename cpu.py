@@ -1,6 +1,7 @@
 from collections import deque
 import logging
 import bit_utils
+import math
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -45,7 +46,8 @@ class CPU:
             0x7: self.add_to_reg,
             0x8: self.logical_operations,
             0xD: self.draw_pixel_to_display,
-            0xA: self.set_I_to_address
+            0xA: self.set_I_to_address,
+            0xF: self.other_operations
         }
 
         # basically opcodes starting with 8 the last byte is the operation
@@ -59,6 +61,10 @@ class CPU:
             0x6: self.right_shift,
             0x7: self.subn_reg_from_reg,
             0x8: self.left_shift
+        }
+
+        self.other_operation_lookup = {
+            0x33: self.bin_coded_dec
         }
 
     def load_fontset(self):
@@ -137,7 +143,14 @@ class CPU:
         try:
             self.logical_operation_lookup[operation]()
         except KeyError:
-            raise UnknownOpcodeException
+            raise UnknownOpcodeException(self.opcode)
+
+    def other_operations(self):
+        operation = self.opcode & 0xFF
+        try:
+            self.other_operation_lookup[operation]()
+        except KeyError:
+            raise UnknownOpcodeException(self.opcode)
 
     def jmp_to_addr(self):
         """
@@ -432,3 +445,26 @@ class CPU:
         logger.info("Shifted register V{} 1 bit to the left got {}".format(
             register,
             hex(self.registers[register])))
+
+    def bin_coded_dec(self):
+        """
+            Fx33 - Store BCD representation of Vx in memory locations I, I+1,
+            and I+2.
+            The interpreter takes the decimal value of Vx, and places the
+            hundreds digit in memory at location in I, the tens digit at
+            location I+1, and the ones digit at location I+2.
+        """
+        register = (self.opcode & 0xFFF) >> 8
+        value = self.registers[register]
+        self.memory[self.I] = int(math.floor(value / 100))
+        self.memory[self.I + 1] = int(math.floor(value % 100 / 10))
+        self.memory[self.I + 2] = value % 10
+
+    def load_mem_to_registers(self):
+        """
+        Fx65 - Read registers V0 through Vx from memory starting at location I.
+        The interpreter reads values from memory starting at location I into
+        registers V0 through Vx.
+        """
+        # Don't forget to add this to the lookup table after finishing it tomorrow.
+        pass
