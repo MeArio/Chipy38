@@ -35,6 +35,7 @@ HEIGHT = 32
 SCALE = 10
 OFFSET = 0x200
 TIMER = pygame.USEREVENT + 1
+TIMERS_UPDATE = 17
 
 # Initializing all the emulator objects
 display = Display(WIDTH, HEIGHT, SCALE)
@@ -51,7 +52,7 @@ def main_loop(args):
     display.display_setup()
 
     cpu.initalize_cpu(args.rom)
-    pygame.time.set_timer(TIMER, 17)
+    pygame.time.set_timer(TIMER, TIMERS_UPDATE)
     running = True
 
     while running:

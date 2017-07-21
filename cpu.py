@@ -64,7 +64,10 @@ class CPU:
         }
 
         self.other_operation_lookup = {
-            0x33: self.bin_coded_dec
+            0x33: self.bin_coded_dec,
+            0x65: self.load_mem_to_registers,
+            0x29: self.load_sprite_from_memory,
+            0x15: self.set_delay_timer_to_reg
         }
 
     def load_fontset(self):
@@ -374,9 +377,10 @@ class CPU:
                         self.registers[0xF] = 1
 
         self.display.draw_flag = True
-        logger.info("Drawing sprite from {} to {}".format(
+        logger.info("Drawing sprite from {} to {} at {}, {}".format(
             hex(self.I),
-            hex(self.I + height)))
+            hex(self.I + height),
+            x, y))
 
     def set_I_to_address(self):
         """
@@ -466,5 +470,35 @@ class CPU:
         The interpreter reads values from memory starting at location I into
         registers V0 through Vx.
         """
-        # Don't forget to add this to the lookup table after finishing it tomorrow.
-        pass
+        register = (self.opcode & 0xFFF) >> 8
+        for x in range(0, register):
+            self.registers[x] = self.memory[self.I + x]
+        logger.info(
+            "Loaded memory from {} to {} in registers till V{}".format(
+                hex(self.I),
+                hex((self.I + register)),
+                register))
+
+    def load_sprite_from_memory(self):
+        """
+            Fx29 - Set I = location of sprite for digit Vx.
+            The value of I is set to the location for the hexadecimal sprite
+            corresponding to the value of Vx. See section 2.4, Display, for
+            more information on the Chip-8 hexadecimal font.
+        """
+        register = (self.opcode & 0xFFF) >> 8
+        self.I = self.registers[register] * 5
+
+        logging.info("Loaded sprite at memory location {}".format(hex(self.I)))
+
+    def set_delay_timer_to_reg(self):
+        """
+            Fx15 - Set delay timer = Vx.
+            DT is set equal to the value of Vx.
+        """
+        register = (self.opcode & 0xFFF) >> 8
+        self.delay_timer = self.registers[register]
+
+        logging.info("Set delay timer to register V{} = {}".format(
+            register,
+            self.registers[register]))
