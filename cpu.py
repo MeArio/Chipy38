@@ -2,6 +2,7 @@ from collections import deque
 import logging
 import bit_utils
 import math
+import random
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -47,7 +48,8 @@ class CPU:
             0x8: self.logical_operations,
             0xD: self.draw_pixel_to_display,
             0xA: self.set_I_to_address,
-            0xF: self.other_operations
+            0xF: self.other_operations,
+            0xC: self.generate_random_number
         }
 
         # basically opcodes starting with 8 the last byte is the operation
@@ -98,7 +100,6 @@ class CPU:
     def update_timers(self):
         if (self.delay_timer > 0):
             self.delay_timer -= 1
-            logger.info("Decremented timer {}".format(self.delay_timer))
         if (self.sound_timer > 0):
             self.sound_timer -= 1
 
@@ -467,6 +468,10 @@ class CPU:
         self.memory[self.I] = int(math.floor(value / 100))
         self.memory[self.I + 1] = int(math.floor(value % 100 / 10))
         self.memory[self.I + 2] = value % 10
+        logger.info("Stored BCD of V{}({}) starting at {}".format(
+            register,
+            self.registers[register],
+            self.I))
 
     def load_mem_to_registers(self):
         """
@@ -515,5 +520,19 @@ class CPU:
         register = (self.opcode & 0xFFF) >> 8
         self.registers[register] = self.delay_timer
         logger.info("Set register V{} to delay timer {}".format(
+            register,
+            self.registers[register]))
+
+    def generate_random_number(self):
+        """
+            Cxkk - Set Vx = random byte AND kk.
+            The interpreter generates a random number from 0 to 255, which is
+            then ANDed with the value kk. The results are stored in Vx.
+        """
+        value = random.randint(0, 0xFF)
+        register = (self.opcode & 0xF00) >> 8
+        to_and = self.opcode & 0xFF
+        self.registers[register] = value & to_and
+        logger.info("Set V{} to random number {}".format(
             register,
             self.registers[register]))
