@@ -67,7 +67,8 @@ class CPU:
             0x33: self.bin_coded_dec,
             0x65: self.load_mem_to_registers,
             0x29: self.load_sprite_from_memory,
-            0x15: self.set_delay_timer_to_reg
+            0x15: self.set_delay_timer_to_reg,
+            0x07: self.set_reg_to_delay_timer
         }
 
     def load_fontset(self):
@@ -98,7 +99,7 @@ class CPU:
         if (self.delay_timer > 0):
             self.delay_timer -= 1
         if (self.sound_timer > 0):
-            self.delay_timer -= 1
+            self.sound_timer -= 1
 
     def run_cycle(self):
         self.fetch_opcode()
@@ -500,5 +501,16 @@ class CPU:
         self.delay_timer = self.registers[register]
 
         logging.info("Set delay timer to register V{} = {}".format(
+            register,
+            self.registers[register]))
+
+    def set_reg_to_delay_timer(self):
+        """
+            Fx07 - Set Vx = delay timer value.
+            The value of DT is placed into Vx.
+        """
+        register = (self.opcode & 0xFFF) >> 8
+        self.registers[register] = self.delay_timer
+        logging.info("Set register V{} to delay timer {}".format(
             register,
             self.registers[register]))
