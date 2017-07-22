@@ -27,6 +27,12 @@ parser.add_argument(
     type=int,
     default=1)
 
+parser.add_argument(
+    "-step",
+    help="activates the stepper, key if f",
+    action='store_true',
+    dest='toggle')
+
 args = parser.parse_args()
 
 # The Chip8 had 4KB of RAM so that means an array of 4096 bytes
@@ -44,6 +50,20 @@ ram = RAM(MEM_SIZE, OFFSET)
 cpu = CPU(ram, display)
 keys = config.keys
 
+pygame.key.set_repeat(1, 15)
+
+
+def wait():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_f:
+                    return
+            if event.type == TIMER:
+                cpu.update_timers()
+
 
 def main_loop(args):
     """
@@ -58,12 +78,20 @@ def main_loop(args):
     running = True
 
     while running:
+        toggle = False
         cpu.keys = [0] * 0xF
         pygame.time.wait(timer)
+        if args.toggle:
+            wait()
         cpu.run_cycle()
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
+                if event.type == pygame.K_p:
+                    if toggle:
+                        toggle = True
+                    else:
+                        toggle = False
                 try:
                     cpu.keys[keys[chr(event.key)]] = 1
                 except Exception:

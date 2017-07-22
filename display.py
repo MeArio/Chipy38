@@ -21,8 +21,10 @@ class Display():
             self.height * self.scale))
         self.surface = pygame.Surface(self.screen.get_size())
         self.surface = self.surface.convert()
+        pygame.display.set_caption("Chip8py3 Emulator")
 
     def update_display(self):
+        self.surface.fill((0, 0, 0, 0))  # Clears the display
         for y in range(0, self.height):
             for x in range(0, self.width):
                 if self.display_buffer[y][x] == 1:
@@ -42,6 +44,7 @@ class Display():
         if self.display_buffer[y][x] == 0:
             self.display_buffer[y][x] = 1
             return False
+
         else:
             self.display_buffer[y][x] = 0
             return True

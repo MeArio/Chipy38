@@ -78,7 +78,8 @@ class CPU:
             0x29: self.load_sprite_from_memory,
             0x15: self.set_delay_timer_to_reg,
             0x07: self.set_reg_to_delay_timer,
-            0x18: self.set_sound_timer_to_reg
+            0x18: self.set_sound_timer_to_reg,
+            0x55: self.load_registers_in_memory
         }
 
     def load_fontset(self):
@@ -110,7 +111,7 @@ class CPU:
             self.delay_timer -= 1
         if (self.sound_timer > 0):
             self.sound_timer -= 1
-            bleep.play()
+            # bleep.play()
 
     def run_cycle(self):
         self.fetch_opcode()
@@ -484,7 +485,7 @@ class CPU:
         logger.info("Stored BCD of V{}({}) starting at {}".format(
             register,
             self.registers[register],
-            self.I))
+            hex(self.I)))
 
     def load_mem_to_registers(self):
         """
@@ -493,7 +494,7 @@ class CPU:
         registers V0 through Vx.
         """
         register = (self.opcode & 0xFFF) >> 8
-        for x in range(0, register):
+        for x in range(register + 1):
             self.registers[x] = self.memory[self.I + x]
         logger.info(
             "Loaded memory from {} to {} in registers till V{}".format(
@@ -560,6 +561,9 @@ class CPU:
         key = (self.opcode & 0xF00) >> 8
         if self.keys[key] == 0:
             self.pc += 2
+        logger.info("Skipped {} because {} wasn't pressed".format(
+            self.memory[self.pc + 2],
+            key))
 
     def set_sound_timer_to_reg(self):
         """
@@ -568,3 +572,20 @@ class CPU:
         """
         register = (self.opcode & 0xF00) >> 8
         self.sound_timer = self.registers[register]
+        logger.info("Set sound timer to V{} = {}".format(
+            register,
+            self.registers[register]))
+
+    def load_registers_in_memory(self):
+        """
+            Fx55 - Store registers V0 through Vx in memory starting at
+            location I.
+            The interpreter copies the values of registers V0 through Vx into
+            memory, starting at the address in I.
+        """
+        register = (self.opcode & 0xF00) >> 8
+        for x in range(register + 1):
+            self.memory[self.I] = self.registers[x]
+        logger.info("Loaded registers from V0 to V{} into {}".format(
+            register,
+            hex(self.I)))
