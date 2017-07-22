@@ -64,7 +64,10 @@ def main_loop(args):
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                cpu.keys[keys[chr(event.key)]] = 1
+                try:
+                    cpu.keys[keys[chr(event.key)]] = 1
+                except Exception:
+                    pass
             if event.type == TIMER:
                 cpu.update_timers()
             if event.type == pygame.QUIT:

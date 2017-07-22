@@ -3,6 +3,11 @@ import logging
 import bit_utils
 import math
 import random
+import pygame
+
+pygame.init()
+bleep = pygame.mixer.Sound('bleep.wav')
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -72,7 +77,8 @@ class CPU:
             0x65: self.load_mem_to_registers,
             0x29: self.load_sprite_from_memory,
             0x15: self.set_delay_timer_to_reg,
-            0x07: self.set_reg_to_delay_timer
+            0x07: self.set_reg_to_delay_timer,
+            0x18: self.set_sound_timer_to_reg
         }
 
     def load_fontset(self):
@@ -104,6 +110,7 @@ class CPU:
             self.delay_timer -= 1
         if (self.sound_timer > 0):
             self.sound_timer -= 1
+            bleep.play()
 
     def run_cycle(self):
         self.fetch_opcode()
@@ -553,3 +560,11 @@ class CPU:
         key = (self.opcode & 0xF00) >> 8
         if self.keys[key] == 0:
             self.pc += 2
+
+    def set_sound_timer_to_reg(self):
+        """
+            Fx18 - Set sound timer = Vx.
+            ST is set equal to the value of Vx.
+        """
+        register = (self.opcode & 0xF00) >> 8
+        self.sound_timer = self.registers[register]
