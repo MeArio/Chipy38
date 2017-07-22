@@ -33,6 +33,7 @@ class CPU:
         self.stack = deque(maxlen=16)
         self.stack_pointer = -1  # Points to the top-level stack instruction
         self.opcode = 0
+        self.keys = [0] * 0xF
 
         # Opcode lookup table decyphered by looking at the first byte
 
@@ -49,7 +50,8 @@ class CPU:
             0xD: self.draw_pixel_to_display,
             0xA: self.set_I_to_address,
             0xF: self.other_operations,
-            0xC: self.generate_random_number
+            0xC: self.generate_random_number,
+            0xE: self.input_handler
         }
 
         # basically opcodes starting with 8 the last byte is the operation
@@ -142,6 +144,10 @@ class CPU:
             self.stack.pop()
             self.stack_pointer -= 1
             logger.info("to address at {}".format(hex(self.pc)))
+
+    def input_handler(self):
+        if self.opcode & 0xFF == 0xA1:
+            self.skip_if_key_not_pressed()
 
     def logical_operations(self):
         operation = self.opcode & 0xF
@@ -272,8 +278,8 @@ class CPU:
             self.registers[register[0]] | self.registers[register[1]])
         logger.info("Bitwise OR on V{} and V{} for {}".format(
             register[0],
-            register[1]),
-            self.registers[register[0]])
+            register[1],
+            self.registers[register[0]]))
 
     def bitwise_and(self):
         """
@@ -288,8 +294,8 @@ class CPU:
             self.registers[register[0]] & self.registers[register[1]])
         logger.info("Bitwise AND on V{} and V{} for {}".format(
             register[0],
-            register[1]),
-            self.registers[register[0]])
+            register[1],
+            self.registers[register[0]]))
 
     def bitwise_xor(self):
         """
@@ -304,8 +310,8 @@ class CPU:
             self.registers[register[0]] ^ self.registers[register[1]])
         logger.info("Bitwise AND on V{} and V{} for {}".format(
             register[0],
-            register[1]),
-            self.registers[register[0]])
+            register[1],
+            self.registers[register[0]]))
 
     def add_reg_to_reg(self):
         """
@@ -536,3 +542,14 @@ class CPU:
         logger.info("Set V{} to random number {}".format(
             register,
             self.registers[register]))
+
+    def skip_if_key_not_pressed(self):
+        """
+            ExA1 - Skip next instruction if key with the value of Vx is not
+            pressed.
+            Checks the keyboard, and if the key corresponding to the value of
+            Vx is currently in the up position, PC is increased by 2.
+        """
+        key = (self.opcode & 0xF00) >> 8
+        if self.keys[key] == 0:
+            self.pc += 2

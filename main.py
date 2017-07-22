@@ -4,6 +4,7 @@ from ram import RAM
 from display import Display
 import argparse
 import logging
+import config
 
 logger = logging.getLogger(__name__)
 fh = logging.FileHandler('last.log')
@@ -41,6 +42,7 @@ TIMERS_UPDATE = 17
 display = Display(WIDTH, HEIGHT, SCALE)
 ram = RAM(MEM_SIZE, OFFSET)
 cpu = CPU(ram, display)
+keys = config.keys
 
 
 def main_loop(args):
@@ -56,10 +58,13 @@ def main_loop(args):
     running = True
 
     while running:
+        cpu.keys = [0] * 0xF
         pygame.time.wait(timer)
         cpu.run_cycle()
 
         for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                cpu.keys[keys[chr(event.key)]] = 1
             if event.type == TIMER:
                 cpu.update_timers()
             if event.type == pygame.QUIT:
@@ -82,5 +87,6 @@ if __name__ == '__main__':
                 hex(cpu.pc),
                 hex(cpu.memory[cpu.pc] << 8 | cpu.memory[cpu.pc + 1]),
                 hex(cpu.memory[cpu.pc+1] << 8 | cpu.memory[cpu.pc + 2])))
+        logger.exception("Here be crash")
 
     pygame.quit()
