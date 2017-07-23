@@ -5,15 +5,21 @@ import pygame.gfxdraw
 class Display():
     colors = {'white': (255, 255, 255)}
 
-    def __init__(self, width, height, scale):
+    def __init__(self, width, height, scale, debug=False):
+        self.debug = debug
+        self.debug_offset = 256
         self.width = width
         self.height = height
+        if debug:
+            self.width += int(self.debug_offset / scale)
         self.display_buffer_init = [
             [0] * self.width for _ in range(self.height)
         ]
         self.display_buffer = self.display_buffer_init
         self.scale = scale
         self.draw_flag = False
+        self.font_size = 9
+        self.font = pygame.font.SysFont('Arial', self.font_size)
 
     def display_setup(self):
         self.screen = pygame.display.set_mode((
@@ -48,3 +54,19 @@ class Display():
         else:
             self.display_buffer[y][x] = 0
             return True
+
+    def draw_registers(self, registers):
+        for i, register in enumerate(registers):
+            register_label = self.font.render(
+                "V{}: {}".format(i, register),
+                1,
+                (255, 255, 255)
+                )
+            self.screen.blit(
+                register_label,
+                (
+                    self.width
+                    * self.scale
+                    - self.debug_offset
+                    / self.scale
+                    - self.font_size, i * 16))

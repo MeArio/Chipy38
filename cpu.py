@@ -137,6 +137,9 @@ class CPU:
 
     # Here are the operations:
 
+    def return_registers(self):
+        return self.registers
+
     def zero_opcodes(self):
         """ Opeartions that start with 0 are either
             0nnn - Jump to machine routine at  nnn (ignored)

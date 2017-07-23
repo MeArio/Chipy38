@@ -28,10 +28,17 @@ parser.add_argument(
     default=1)
 
 parser.add_argument(
-    "-step",
+    "-st",
     help="activates the stepper, key if f",
     action='store_true',
     dest='toggle')
+
+parser.add_argument(
+    "-d",
+    help="display debug info on screen",
+    action='store_true',
+    dest='debug',
+    default=False)
 
 args = parser.parse_args()
 
@@ -43,14 +50,15 @@ SCALE = 10
 OFFSET = 0x200
 TIMER = pygame.USEREVENT + 1
 TIMERS_UPDATE = 17
+DEBUG = args.debug
+if DEBUG:
+    pygame.key.set_repeat(1, 100)
 
 # Initializing all the emulator objects
-display = Display(WIDTH, HEIGHT, SCALE)
+display = Display(WIDTH, HEIGHT, SCALE, DEBUG)
 ram = RAM(MEM_SIZE, OFFSET)
 cpu = CPU(ram, display)
 keys = config.keys
-
-pygame.key.set_repeat(1, 15)
 
 
 def wait():
@@ -101,8 +109,10 @@ def main_loop(args):
             if event.type == pygame.QUIT:
                 running = False
 
-        if display.draw_flag:
+        if display.draw_flag or DEBUG:
             display.update_display()
+            if DEBUG:
+                display.draw_registers(cpu.registers)
             pygame.display.flip()
 
         if cpu.opcode == 0x00FD:
