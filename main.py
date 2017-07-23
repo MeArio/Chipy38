@@ -60,13 +60,21 @@ ram = RAM(MEM_SIZE, OFFSET)
 cpu = CPU(ram, display)
 keys = config.keys
 
+pause_toggle = True
+
 
 def wait():
+    global pause_toggle
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_d:
+                    cpu.dump_memory("memory")
+                if event.key == pygame.K_p:
+                    pause_toggle = False
+                    return
                 if event.key == pygame.K_f:
                     return
             if event.type == TIMER:
@@ -84,22 +92,18 @@ def main_loop(args):
     cpu.initalize_cpu(args.rom)
     pygame.time.set_timer(TIMER, TIMERS_UPDATE)
     running = True
+    global pause_toggle
 
     while running:
-        toggle = False
         cpu.keys = [0] * 0xF
         pygame.time.wait(timer)
-        if args.toggle:
+        if args.toggle and pause_toggle:
             wait()
         cpu.run_cycle()
-
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.type == pygame.K_p:
-                    if toggle:
-                        toggle = True
-                    else:
-                        toggle = False
+                if event.key == pygame.K_p:
+                    pause_toggle = True
                 try:
                     cpu.keys[keys[chr(event.key)]] = 1
                 except Exception:
@@ -112,7 +116,11 @@ def main_loop(args):
         if display.draw_flag or DEBUG:
             display.update_display()
             if DEBUG:
-                display.draw_registers(cpu.registers)
+                display.draw_registers(
+                    cpu.registers,
+                    cpu.pc,
+                    cpu.I,
+                    cpu.opcode)
             pygame.display.flip()
 
         if cpu.opcode == 0x00FD:

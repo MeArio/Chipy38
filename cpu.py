@@ -95,6 +95,15 @@ class CPU:
             i += 1
         cart.close()
 
+    def dump_memory(self, path):
+        """
+            Dumps the cpu memory into a file
+        """
+        with open(path, 'wb') as file:
+            for byte in self.memory:
+                file.write(bytes([byte]))
+        logger.info("Dumped memory into {}".format(path))
+
     def fetch_opcode(self):
         self.opcode = self.memory[self.pc] << 8 | self.memory[self.pc + 1]
 
@@ -192,7 +201,7 @@ class CPU:
         # Might be an issue didn't test it yet.
         self.stack_pointer += 1
         self.stack.append(self.pc)
-        self.pc = self.opcode & 0x0FFF
+        self.pc = (self.opcode & 0x0FFF) - 2
         logger.info("Called subroutine at {}".format(hex(self.pc)))
 
     def branch_if_equal_val(self):

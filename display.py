@@ -55,7 +55,44 @@ class Display():
             self.display_buffer[y][x] = 0
             return True
 
-    def draw_registers(self, registers):
+    def draw_registers(self, registers, pc, i, opcode):
+        opcode_label = self.font.render(
+            "OP: {}".format(hex(opcode)),
+            1,
+            (255, 255, 255))
+        self.screen.blit(
+            opcode_label,
+            (
+                self.width
+                * self.scale
+                - self.debug_offset
+                - self.font_size, 0))
+
+        pc_label = self.font.render(
+            "PC = {}".format(hex(pc)),
+            1,
+            (255, 255, 255))
+        self.screen.blit(
+            pc_label,
+            (
+                self.width
+                * self.scale
+                - self.debug_offset
+                / self.scale
+                - self.font_size * 3, 0))
+
+        i_label = self.font.render(
+            "I = {}".format(hex(i)),
+            1,
+            (255, 255, 255))
+        self.screen.blit(
+            i_label,
+            (
+                self.width
+                * self.scale
+                - self.debug_offset
+                / self.scale
+                - self.font_size * 3, 16))
         for i, register in enumerate(registers):
             register_label = self.font.render(
                 "V{}: {}".format(i, register),
@@ -69,4 +106,4 @@ class Display():
                     * self.scale
                     - self.debug_offset
                     / self.scale
-                    - self.font_size, i * 16))
+                    - self.font_size * 3, (i+2) * 16))
