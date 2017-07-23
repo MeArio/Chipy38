@@ -39,7 +39,6 @@ class CPU:
         self.stack = deque(maxlen=16)
         self.stack_pointer = -1  # Points to the top-level stack instruction
         self.opcode = 0
-        self.keys = [0] * 0xF
 
         # Opcode lookup table decyphered by looking at the first byte
 
@@ -57,7 +56,9 @@ class CPU:
             0xA: self.set_I_to_address,
             0xF: self.other_operations,
             0xC: self.generate_random_number,
-            0xE: self.input_handler
+            0xE: self.input_handler,
+            0x9: self.skip_if_regs_not_equal,
+            0xB: self.jmp_to_val_plus_v0
         }
 
         # basically opcodes starting with 8 the last byte is the operation
@@ -634,3 +635,23 @@ class CPU:
             logger.info("Skipped {} because {} was pressed".format(
                 self.memory[self.pc + 2],
                 key))
+
+    def skip_if_regs_not_equal(self):
+        """
+            9xy0 - Skip next instruction if Vx != Vy.
+            The values of Vx and Vy are compared, and if they are not equal,
+            the program counter is increased by 2.
+        """
+        register = self.return_middle_registers(self.opcode)
+        value_x = self.registers[register[0]]
+        value_y = self.registers[register[1]]
+        if value_x != value_y:
+            self.pc += 2
+
+    def jmp_to_val_plus_v0(self):
+        """
+            Bnnn - Jump to location nnn + V0.
+            The program counter is set to nnn plus the value of V0.
+        """
+        addr = self.opcode & 0xFFF
+        self.pc = addr + self.registers[0]

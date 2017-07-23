@@ -18,12 +18,12 @@ Opcodes:
 8xy6 - SHR Vx {, Vy} *
 8xy7 - SUBN Vx, Vy *
 8xyE - SHL Vx {, Vy} *
-9xy0 - SNE Vx, Vy
+9xy0 - SNE Vx, Vy *
 Annn - LD I, addr *
-Bnnn - JP V0, addr
+Bnnn - JP V0, addr *
 Cxkk - RND Vx, byte *
 Dxyn - DRW Vx, Vy, nibble *
-Ex9E - SKP Vx
+Ex9E - SKP Vx *
 ExA1 - SKNP Vx *
 Fx07 - LD Vx, DT *
 Fx0A - LD Vx, K
