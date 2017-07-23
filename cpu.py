@@ -4,6 +4,7 @@ import bit_utils
 import math
 import random
 import pygame
+import config
 
 pygame.init()
 bleep = pygame.mixer.Sound('bleep.wav')
@@ -79,7 +80,8 @@ class CPU:
             0x15: self.set_delay_timer_to_reg,
             0x07: self.set_reg_to_delay_timer,
             0x18: self.set_sound_timer_to_reg,
-            0x55: self.load_registers_in_memory
+            0x55: self.load_registers_in_memory,
+            0x1E: self.add_reg_to_I
         }
 
     def load_fontset(self):
@@ -120,7 +122,7 @@ class CPU:
             self.delay_timer -= 1
         if (self.sound_timer > 0):
             self.sound_timer -= 1
-            # bleep.play()
+            bleep.play()
 
     def run_cycle(self):
         self.fetch_opcode()
@@ -168,6 +170,8 @@ class CPU:
     def input_handler(self):
         if self.opcode & 0xFF == 0xA1:
             self.skip_if_key_not_pressed()
+        elif self.opcode & 0xFF == 0x9E:
+            self.skip_if_key_pressed()
 
     def logical_operations(self):
         operation = self.opcode & 0xF
@@ -572,12 +576,12 @@ class CPU:
         """
         register = (self.opcode & 0xF00) >> 8
         key = self.registers[register]
-        if self.keys[key] == 0:
+        keys = pygame.key.get_pressed()
+        if not keys[ord(config.keys[key])]:
             self.pc += 2
-            logger.info("Skipped {} because {} wasn't pressed".format(
+            logger.info("Skipped {} because {} was pressed".format(
                 self.memory[self.pc + 2],
                 key))
-        self.keys[key] = 0
 
     def set_sound_timer_to_reg(self):
         """
@@ -603,3 +607,30 @@ class CPU:
         logger.info("Loaded registers from V0 to V{} into {}".format(
             register,
             hex(self.I)))
+
+    def add_reg_to_I(self):
+        """
+            Fx1E - Set I = I + Vx.
+            The values of I and Vx are added, and the results are stored in I.
+        """
+        register = (self.opcode & 0xF00) >> 8
+        value = bit_utils.wrap_around(
+            self.registers[register] + self.I,
+            0xffff + 1)
+        self.I = value
+
+    def skip_if_key_pressed(self):
+        """
+            Ex9E - Skip next instruction if key with the value of Vx is
+            pressed.
+            Checks the keyboard, and if the key corresponding to the value of
+            Vx is currently in the down position, PC is increased by 2.
+        """
+        register = (self.opcode & 0xF00) >> 8
+        key = self.registers[register]
+        keys = pygame.key.get_pressed()
+        if keys[ord(config.keys[key])]:
+            self.pc += 2
+            logger.info("Skipped {} because {} was pressed".format(
+                self.memory[self.pc + 2],
+                key))

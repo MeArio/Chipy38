@@ -12,10 +12,9 @@ class Display():
         self.height = height
         if debug:
             self.width += int(self.debug_offset / scale)
-        self.display_buffer_init = [
+        self.display_buffer = [
             [0] * self.width for _ in range(self.height)
         ]
-        self.display_buffer = self.display_buffer_init
         self.scale = scale
         self.draw_flag = False
         self.font_size = 9
@@ -41,6 +40,12 @@ class Display():
                         Display.colors['white'])
         self.screen.blit(self.surface, (0, 0))
         self.draw_flag = False
+
+    def clear_display(self):
+        self.display_buffer = [
+            [0] * self.width for _ in range(self.height)
+        ]
+        self.draw_flag = True
 
     def set_pixel(self, x, y):
         """

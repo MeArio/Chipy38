@@ -102,13 +102,6 @@ def main_loop(args):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     pause_toggle = True
-                try:
-                    cpu.keys[keys[chr(event.key)]] = 1
-                    logger.info(cpu.keys)
-                    logger.info(chr(event.key))
-                    logger.info(keys[chr(event.key)])
-                except Exception:
-                    pass
             if event.type == TIMER:
                 cpu.update_timers()
             if event.type == pygame.QUIT:
