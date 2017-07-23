@@ -51,8 +51,7 @@ OFFSET = 0x200
 TIMER = pygame.USEREVENT + 1
 TIMERS_UPDATE = 17
 DEBUG = args.debug
-if DEBUG:
-    pygame.key.set_repeat(1, 100)
+pygame.key.set_repeat(1, 17)
 
 # Initializing all the emulator objects
 display = Display(WIDTH, HEIGHT, SCALE, DEBUG)
@@ -61,6 +60,7 @@ cpu = CPU(ram, display)
 keys = config.keys
 
 pause_toggle = True
+clock = pygame.time.Clock()
 
 
 def wait():
@@ -95,7 +95,6 @@ def main_loop(args):
     global pause_toggle
 
     while running:
-        cpu.keys = [0] * 0xF
         pygame.time.wait(timer)
         if args.toggle and pause_toggle:
             wait()
@@ -106,6 +105,9 @@ def main_loop(args):
                     pause_toggle = True
                 try:
                     cpu.keys[keys[chr(event.key)]] = 1
+                    logger.info(cpu.keys)
+                    logger.info(chr(event.key))
+                    logger.info(keys[chr(event.key)])
                 except Exception:
                     pass
             if event.type == TIMER:

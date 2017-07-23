@@ -570,12 +570,14 @@ class CPU:
             Checks the keyboard, and if the key corresponding to the value of
             Vx is currently in the up position, PC is increased by 2.
         """
-        key = (self.opcode & 0xF00) >> 8
+        register = (self.opcode & 0xF00) >> 8
+        key = self.registers[register]
         if self.keys[key] == 0:
             self.pc += 2
-        logger.info("Skipped {} because {} wasn't pressed".format(
-            self.memory[self.pc + 2],
-            key))
+            logger.info("Skipped {} because {} wasn't pressed".format(
+                self.memory[self.pc + 2],
+                key))
+        self.keys[key] = 0
 
     def set_sound_timer_to_reg(self):
         """

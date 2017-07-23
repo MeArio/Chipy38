@@ -66,7 +66,8 @@ class Display():
                 self.width
                 * self.scale
                 - self.debug_offset
-                - self.font_size, 0))
+                + self.font_size,
+                0))
 
         pc_label = self.font.render(
             "PC = {}".format(hex(pc)),
