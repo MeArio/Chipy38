@@ -42,7 +42,7 @@ class TestCPU(unittest.TestCase):
             self.cpu.opcode = 0x1FFF & (address | 0xF000)
             self.cpu.decode_opcode()
             print(self.cpu.opcode)
-            self.assertEqual(self.cpu.pc, (address & 0x0FFF))
+            self.assertEqual(self.cpu.pc+2, (address & 0x0FFF))
 
     def test_unknown_opcode(self):
         self.opcode = 0x7FFF
@@ -60,7 +60,7 @@ class TestCPU(unittest.TestCase):
             self.cpu.call_subroutine()
             self.assertEqual(self.cpu.stack_pointer, 0)
             self.assertEqual(self.cpu.stack[self.cpu.stack_pointer], 0)
-            self.assertEqual(self.cpu.pc, address)
+            self.assertEqual(self.cpu.pc+2, address)
             self.cpu.stack.pop()
             self.cpu.stack_pointer -= 1
 
