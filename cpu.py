@@ -82,7 +82,8 @@ class CPU:
             0x07: self.set_reg_to_delay_timer,
             0x18: self.set_sound_timer_to_reg,
             0x55: self.load_registers_in_memory,
-            0x1E: self.add_reg_to_I
+            0x1E: self.add_reg_to_I,
+            0x0A: self.wait_for_keypress
         }
 
     def load_fontset(self):
@@ -647,6 +648,10 @@ class CPU:
         value_y = self.registers[register[1]]
         if value_x != value_y:
             self.pc += 2
+        logger.info("Skipped {} because V{} = V{}".format(
+            hex(self.pc - 2),
+            register[0],
+            register[1]))
 
     def jmp_to_val_plus_v0(self):
         """
@@ -655,3 +660,28 @@ class CPU:
         """
         addr = self.opcode & 0xFFF
         self.pc = addr + self.registers[0]
+        logger.info("Jumped to {} + V0 = {}".format(
+            hex(addr),
+            hex(self.pc)))
+
+    def wait_for_keypress(self):
+        """
+            Fx0A - Wait for a key press, store the value of the key in Vx.
+            All execution stops until a key is pressed, then the value of that
+            key is stored in Vx.
+        """
+        register = (self.opcode & 0xF00) >> 8
+        key_pressed = False
+        while not key_pressed:
+            event = pygame.event.wait()
+            if event.type == pygame.KEYDOWN:
+                inv_keys = {v: k for k, v in config.keys.items()}
+                try:
+                    self.registers[register] = inv_keys[chr(event.key)]
+                    key_pressed = True
+                except KeyError:
+                    pass
+
+        logger.info("Stored key {} into V{}".format(
+            self.registers[register],
+            register))
