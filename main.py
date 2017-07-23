@@ -28,12 +28,6 @@ parser.add_argument(
     default=1)
 
 parser.add_argument(
-    "-st",
-    help="activates the stepper, key if f",
-    action='store_true',
-    dest='toggle')
-
-parser.add_argument(
     "-d",
     help="display debug info on screen",
     action='store_true',
@@ -49,9 +43,14 @@ HEIGHT = 32
 SCALE = 10
 OFFSET = 0x200
 TIMER = pygame.USEREVENT + 1
-TIMERS_UPDATE = 17
+TIMERS_UPDATE = config.timers_delay
 DEBUG = args.debug
-pygame.key.set_repeat(1, 17)
+
+if not DEBUG:
+    pygame.key.set_repeat(1, 17)
+else:
+    # Pausing becomes impossible with 17 ms delay between keypresses.
+    pygame.key.set_repeat(1, 100)
 
 # Initializing all the emulator objects
 display = Display(WIDTH, HEIGHT, SCALE, DEBUG)
@@ -96,7 +95,7 @@ def main_loop(args):
 
     while running:
         pygame.time.wait(timer)
-        if args.toggle and pause_toggle:
+        if DEBUG and pause_toggle:
             wait()
         cpu.run_cycle()
         for event in pygame.event.get():
