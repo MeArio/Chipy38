@@ -525,11 +525,8 @@ class CPU:
         registers V0 through Vx.
         """
         register = (self.opcode & 0xFFF) >> 8
-        if self.registers == 0:
-            self.registers[register] = self.I
-        else:
-            for x in range(register+1):
-                self.registers[x] = self.memory[self.I + x]
+        for x in range(register+1):
+            self.registers[x] = self.memory[self.I + x]
         logger.info(
             "Loaded memory from {} to {} in registers till V{}".format(
                 hex(self.I),
@@ -620,11 +617,8 @@ class CPU:
             memory, starting at the address in I.
         """
         register = (self.opcode & 0xF00) >> 8
-        if register == 0:
-            self.memory[self.I] = self.registers[register]
-        else:
-            for x in range(register):
-                self.memory[self.I + x] = self.registers[x]
+        for x in range(register+1):
+            self.memory[self.I + x] = self.registers[x]
         logger.info("Loaded registers from V0 to V{} into {}".format(
             register,
             hex(self.I)))
