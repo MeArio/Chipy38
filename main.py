@@ -100,6 +100,8 @@ def main_loop(args):
         cpu.run_cycle()
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_l:
+                    cpu.reset_cpu(args.rom)
                 if event.key == pygame.K_p:
                     pause_toggle = True
             if event.type == TIMER:

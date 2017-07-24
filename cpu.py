@@ -27,6 +27,7 @@ class UnknownOpcodeException(Exception):
 class CPU:
     def __init__(self, ram, display):
         self.registers = [0] * 16  # The CHIP8 has 16 registers
+        self.ram = ram
         self.memory = ram.memory
         self.fontset = ram.fontset
         self.display = display
@@ -135,6 +136,18 @@ class CPU:
         self.load_fontset()
         self.pc = self.offset
         self.load_rom(filename)
+
+    def reset_cpu(self, rom):
+        self.registers = [0] * 16
+        self.memory = self.ram.memory
+        self.I = 0
+        self.pc = 200
+        self.delay_timer = 0
+        self.sound_timer = 0
+        self.stack = deque(maxlen=16)
+        self.stack_pointer = -1
+        self.display.clear_display()
+        self.load_rom(rom)
 
     def return_middle_registers(self, opcode):
         """
@@ -674,6 +687,8 @@ class CPU:
         key_pressed = False
         while not key_pressed:
             event = pygame.event.wait()
+            if event.type == pygame.QUIT:
+                pygame.quit()
             if event.type == pygame.KEYDOWN:
                 inv_keys = {v: k for k, v in config.keys.items()}
                 try:
