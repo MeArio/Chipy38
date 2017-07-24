@@ -1,5 +1,6 @@
 import pygame
 from cpu import CPU
+from cpu import logger as logger_cpu
 from ram import RAM
 from display import Display
 import argparse
@@ -57,7 +58,8 @@ display = Display(WIDTH, HEIGHT, SCALE, DEBUG)
 ram = RAM(MEM_SIZE, OFFSET)
 cpu = CPU(ram, display)
 keys = config.keys
-
+if not DEBUG:
+    logger_cpu.propagate = False
 pause_toggle = True
 clock = pygame.time.Clock()
 

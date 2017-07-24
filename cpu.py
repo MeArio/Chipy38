@@ -72,7 +72,7 @@ class CPU:
             0x5: self.sub_reg_from_reg,
             0x6: self.right_shift,
             0x7: self.subn_reg_from_reg,
-            0x8: self.left_shift
+            0xE: self.left_shift
         }
 
         self.other_operation_lookup = {
@@ -347,7 +347,7 @@ class CPU:
         register = self.return_middle_registers(self.opcode)
         self.registers[register[0]] = (
             self.registers[register[0]] ^ self.registers[register[1]])
-        logger.info("Bitwise AND on V{} and V{} for {}".format(
+        logger.info("Bitwise XOR on V{} and V{} for {}".format(
             register[0],
             register[1],
             self.registers[register[0]]))
@@ -525,8 +525,11 @@ class CPU:
         registers V0 through Vx.
         """
         register = (self.opcode & 0xFFF) >> 8
-        for x in range(register + 1):
-            self.registers[x] = self.memory[self.I + x]
+        if self.registers == 0:
+            self.registers[register] = self.I
+        else:
+            for x in range(register+1):
+                self.registers[x] = self.memory[self.I + x]
         logger.info(
             "Loaded memory from {} to {} in registers till V{}".format(
                 hex(self.I),
@@ -594,7 +597,7 @@ class CPU:
         keys = pygame.key.get_pressed()
         if not keys[ord(config.keys[key])]:
             self.pc += 2
-            logger.info("Skipped {} because {} was pressed".format(
+            logger.info("Skipped {} because {} wasn't pressed".format(
                 self.memory[self.pc + 2],
                 key))
 
@@ -617,8 +620,11 @@ class CPU:
             memory, starting at the address in I.
         """
         register = (self.opcode & 0xF00) >> 8
-        for x in range(register + 1):
-            self.memory[self.I] = self.registers[x]
+        if register == 0:
+            self.memory[self.I] = self.registers[register]
+        else:
+            for x in range(register):
+                self.memory[self.I + x] = self.registers[x]
         logger.info("Loaded registers from V0 to V{} into {}".format(
             register,
             hex(self.I)))
