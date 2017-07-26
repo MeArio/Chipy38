@@ -18,3 +18,6 @@ keys = {
 }
 
 timers_delay = 17
+
+shift_quirk = False
+load_quirk = False

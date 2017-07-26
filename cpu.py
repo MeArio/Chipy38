@@ -70,19 +70,19 @@ class CPU:
             0x3: self.bitwise_xor,
             0x4: self.add_reg_to_reg,
             0x5: self.sub_reg_from_reg,
-            0x6: self.right_shift,
+            0x6: self.right_shift if not config.shift_quirk else self.right_shift_quirk,
             0x7: self.subn_reg_from_reg,
-            0xE: self.left_shift
+            0xE: self.left_shift if not config.shift_quirk else self.left_shift_quirk
         }
 
         self.other_operation_lookup = {
             0x33: self.bin_coded_dec,
-            0x65: self.load_mem_to_registers,
+            0x65: self.load_mem_to_registers if not config.load_quirk else self.load_mem_to_registers_quirk,
             0x29: self.load_sprite_from_memory,
             0x15: self.set_delay_timer_to_reg,
             0x07: self.set_reg_to_delay_timer,
             0x18: self.set_sound_timer_to_reg,
-            0x55: self.load_registers_in_memory,
+            0x55: self.load_registers_in_memory if not config.load_quirk else self.load_registers_in_memory_quirk,
             0x1E: self.add_reg_to_I,
             0x0A: self.wait_for_keypress
         }
@@ -448,15 +448,31 @@ class CPU:
         """
         register = (self.opcode & 0xFFF) >> 8
         bits = self.registers[register]
-        if bits & 0b1 == 1:
+        """if bits & 0b1 == 1:
             self.registers[0xF] = 1
         else:
             self.registers[0xF] = 0
-
+        """
+        self.registers[0xF] = bits & 0b1
         self.registers[register] = self.registers[register] >> 1
         logger.info("Shifted register V{} 1 bit to the right got {}".format(
             register,
             hex(self.registers[register])))
+
+    def right_shift_quirk(self):
+        """
+            8xy6 - Set Vx = Vy SHR 1.
+            If the least-significant bit of Vy is 1, then VF is set to 1,
+            otherwise 0. Then Vy is divided by 2.
+        """
+        register = self.return_middle_registers(self.opcode)
+        bits = self.registers[register[1]]
+        self.registers[0xF] = bits & 0b1
+        self.registers[register[0]] = self.registers[register[1]] >> 1
+        logger.info("Shifted register V{} to the right into V{}({})".format(
+            register[1],
+            register[0],
+            hex(self.registers[register[0]])))
 
     def subn_reg_from_reg(self):
         """
@@ -490,15 +506,31 @@ class CPU:
         """
         register = (self.opcode & 0xFFF) >> 8
         bits = self.registers[register]
-        if bits & 0b1 == 1:
+        """if bits & 0b1 == 1:
             self.registers[0xF] = 1
         else:
             self.registers[0xF] = 0
-
+        """
+        self.registers[0xF] = bits & 0x80
         self.registers[register] = self.registers[register] << 1
         logger.info("Shifted register V{} 1 bit to the left got {}".format(
             register,
             hex(self.registers[register])))
+
+    def left_shift_quirk(self):
+        """
+            8xyE - Set Vx = Vy SHL 1.
+            If the most-significant bit of Vy is 1, then VF is set to 1,
+            otherwise 0. Then Vy is multiplied by 2.
+        """
+        register = self.return_middle_registers(self.opcode)
+        bits = self.registers[register[1]]
+        self.registers[0xF] = bits & 0x80
+        self.registers[register[0]] = self.registers[register[1]] << 1
+        logger.info("Shifted register V{} to the left into V{}({})".format(
+            register[1],
+            register[0],
+            hex(self.registers[register[0]])))
 
     def bin_coded_dec(self):
         """
@@ -527,6 +559,23 @@ class CPU:
         register = (self.opcode & 0xFFF) >> 8
         for x in range(register+1):
             self.registers[x] = self.memory[self.I + x]
+        logger.info(
+            "Loaded memory from {} to {} in registers till V{}".format(
+                hex(self.I),
+                hex((self.I + register)),
+                register))
+
+    def load_mem_to_registers_quirk(self):
+        """
+        Fx65 - Read registers V0 through Vx from memory starting at location I.
+        The interpreter reads values from memory starting at location I into
+        registers V0 through Vx.
+        I is set to I + X + 1 after operation
+        """
+        register = (self.opcode & 0xFFF) >> 8
+        for x in range(register+1):
+            self.registers[x] = self.memory[self.I + x]
+        self.I += register + 1
         logger.info(
             "Loaded memory from {} to {} in registers till V{}".format(
                 hex(self.I),
@@ -595,7 +644,7 @@ class CPU:
         if not keys[ord(config.keys[key])]:
             self.pc += 2
             logger.info("Skipped {} because {} wasn't pressed".format(
-                self.memory[self.pc + 2],
+                hex(self.memory[self.pc - 2]),
                 key))
 
     def set_sound_timer_to_reg(self):
@@ -623,6 +672,22 @@ class CPU:
             register,
             hex(self.I)))
 
+    def load_registers_in_memory_quirk(self):
+        """
+            Fx55 - Store registers V0 through Vx in memory starting at
+            location I.
+            The interpreter copies the values of registers V0 through Vx into
+            memory, starting at the address in I.
+            I is set to I + X + 1 after operation
+        """
+        register = (self.opcode & 0xF00) >> 8
+        for x in range(register+1):
+            self.memory[self.I + x] = self.registers[x]
+        self.I += register + 1
+        logger.info("Loaded registers from V0 to V{} into {}".format(
+            register,
+            hex(self.I)))
+
     def add_reg_to_I(self):
         """
             Fx1E - Set I = I + Vx.
@@ -633,6 +698,9 @@ class CPU:
             self.registers[register] + self.I,
             0xffff + 1)
         self.I = value
+        logger.info("Added V{}({}) to I".format(
+            register,
+            self.registers[register]))
 
     def skip_if_key_pressed(self):
         """
