@@ -13,3 +13,5 @@ roms/
 /last.log
 *.pyc
 /memory
+/last-blink.log
+/todo.txt
