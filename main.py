@@ -42,6 +42,7 @@ MEM_SIZE = 4096
 WIDTH = 64
 HEIGHT = 32
 OFFSET = 0x200
+SCALE = args.scale
 TIMER = pygame.USEREVENT + 1
 TIMERS_UPDATE = config.timers_delay
 DEBUG = args.debug
@@ -86,7 +87,6 @@ def main_loop(args):
         Runs the main loop.
     """
     timer = args.timer
-    display.scale = args.scale
     display.display_setup()
 
     cpu.initalize_cpu(args.rom)
