@@ -12,3 +12,4 @@ roms/
 /.cache
 /last.log
 *.pyc
+/memory

@@ -41,7 +41,6 @@ args = parser.parse_args()
 MEM_SIZE = 4096
 WIDTH = 64
 HEIGHT = 32
-SCALE = 10
 OFFSET = 0x200
 TIMER = pygame.USEREVENT + 1
 TIMERS_UPDATE = config.timers_delay
